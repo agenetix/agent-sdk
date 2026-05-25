@@ -48,7 +48,7 @@ export interface EmcyEmbeddedAuthConfig {
 
 export interface EmcyAppTokenAuthConfig {
   mode: 'app-token';
-  appId: string;
+  appId?: string;
   getToken: () => Promise<string | undefined> | string | undefined;
 }
 

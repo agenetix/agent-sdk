@@ -793,7 +793,6 @@ describe('EmcyAgent auth behavior', () => {
       agentId: 'ag_todo_local',
       auth: {
         mode: 'app-token',
-        appId: 'checklistsquad',
         getToken,
       },
     });
@@ -833,10 +832,9 @@ describe('EmcyAgent auth behavior', () => {
     expect(exchangeInit.method).toBe('POST');
     expect(exchangeInit.headers).toMatchObject({
       Authorization: 'Bearer host-app-access-token',
-      'x-emcy-embedded-app-id': 'checklistsquad',
     });
+    expect(exchangeInit.headers).not.toHaveProperty('x-emcy-embedded-app-id');
     expect(JSON.parse(exchangeInit.body as string)).toEqual({
-      appId: 'checklistsquad',
       agentId: 'ag_todo_local',
       resource: gatewayMcpUrl,
       scopes: ['checklists.read', 'checklists.write'],

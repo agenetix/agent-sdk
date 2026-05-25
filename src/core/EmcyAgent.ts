@@ -171,19 +171,27 @@ function createAppTokenAuthHandler(
       return undefined;
     }
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${trimmedToken}`,
+    };
+    if (auth.appId?.trim()) {
+      headers['x-emcy-embedded-app-id'] = auth.appId.trim();
+    }
+
+    const body: Record<string, unknown> = {
+      agentId,
+      resource: authConfig.resource ?? mcpServerUrl,
+      scopes: authConfig.scopes,
+    };
+    if (auth.appId?.trim()) {
+      body.appId = auth.appId.trim();
+    }
+
     const response = await fetch(buildEmbeddedExchangeUrl(mcpServerUrl), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${trimmedToken}`,
-        'x-emcy-embedded-app-id': auth.appId,
-      },
-      body: JSON.stringify({
-        appId: auth.appId,
-        agentId,
-        resource: authConfig.resource ?? mcpServerUrl,
-        scopes: authConfig.scopes,
-      }),
+      headers,
+      body: JSON.stringify(body),
     });
 
     const payload = await response.json().catch(() => null) as Record<string, unknown> | null;

@@ -72,7 +72,6 @@ export function App() {
     }}
     auth={{
       mode: "app-token",
-      appId: "your-app",
       getToken: () => session.getAccessToken(),
     }}
     mode="inline"
@@ -100,7 +99,6 @@ export function CustomAssistant() {
     },
     auth: {
       mode: "app-token",
-      appId: "your-app",
       getToken: () => session.getAccessToken(),
     },
     clientTools,
@@ -209,7 +207,6 @@ ownership and give the SDK a token getter:
 ```ts
 auth: {
   mode: "app-token",
-  appId: "your-app",
   getToken: () => session.getAccessToken(),
 }
 ```
