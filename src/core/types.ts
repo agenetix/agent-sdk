@@ -46,6 +46,12 @@ export interface EmcyEmbeddedAuthConfig {
   mismatchPolicy: 'block_with_switch';
 }
 
+export interface EmcyAppTokenAuthConfig {
+  mode: 'app-token';
+  appId: string;
+  getToken: () => Promise<string | undefined> | string | undefined;
+}
+
 export interface EmcyExternalUserContext {
   id?: string;
   email?: string;
@@ -156,6 +162,14 @@ export interface EmcyAgentConfig {
    * the built-in popup flow can prefer the same downstream account.
    */
   embeddedAuth?: EmcyEmbeddedAuthConfig;
+
+  /**
+   * App-owned MCP auth for embedded products.
+   * Use this when your app already authenticated the user and can return a
+   * short-lived app access token. The SDK exchanges that token at Gateway for
+   * an MCP-facing token without opening a second sign-in window.
+   */
+  auth?: EmcyAppTokenAuthConfig;
 
   /**
    * If true, MCP server calls include cookies (for cookie-based auth).

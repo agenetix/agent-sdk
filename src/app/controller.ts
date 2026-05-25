@@ -235,7 +235,7 @@ export class AppAgentController {
     const onAuthRequired =
       config.onAuthRequired
       ?? (
-        this.platform.auth
+        !config.auth && this.platform.auth
           ? createPlatformAuthHandler({
               platform: this.platform,
               userIdentity: config.userIdentity,
@@ -252,6 +252,7 @@ export class AppAgentController {
       oauthClientMetadataUrl: config.oauthClientMetadataUrl,
       getAuthToken: config.getAuthToken,
       authSessionKey: config.appSessionKey,
+      auth: config.auth,
       embeddedAuth: config.userIdentity
         ? {
             hostIdentity: config.userIdentity,

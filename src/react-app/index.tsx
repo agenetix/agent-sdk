@@ -19,7 +19,7 @@ export function useAppAgent(
   config: AppAgentConfig,
   options?: UseAppAgentOptions,
 ): UseAppAgentReturn {
-  const shouldUseBuiltInPopupAuth = !config.onAuthRequired;
+  const shouldUseBuiltInPopupAuth = !config.onAuthRequired && !config.auth;
   const popupRequestAuthRef = useRef<(
     serverUrl: string,
     authConfig: McpServerAuthConfig,

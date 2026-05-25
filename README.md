@@ -65,14 +65,19 @@ export function App() {
         apiKey="emcy_sk_xxxx"
         agentId="ag_xxxxx"
         appSessionKey={session.id}
-        userIdentity={{
-          subject: session.user.id,
-          email: session.user.email,
-          organizationId: session.organizationId,
-        }}
-        mode="inline"
-        title="Support Agent"
-      />
+    userIdentity={{
+      subject: session.user.id,
+      email: session.user.email,
+      organizationId: session.organizationId,
+    }}
+    auth={{
+      mode: "app-token",
+      appId: "your-app",
+      getToken: () => session.getAccessToken(),
+    }}
+    mode="inline"
+    title="Support Agent"
+  />
     </div>
   );
 }
@@ -92,6 +97,11 @@ export function CustomAssistant() {
       subject: session.user.id,
       email: session.user.email,
       organizationId: session.organizationId,
+    },
+    auth: {
+      mode: "app-token",
+      appId: "your-app",
+      getToken: () => session.getAccessToken(),
     },
     clientTools,
     appContext,
@@ -191,6 +201,22 @@ userIdentity: {
 }
 ```
 
+### `auth`
+
+For embedded products where the user already signed in, let your app keep auth
+ownership and give the SDK a token getter:
+
+```ts
+auth: {
+  mode: "app-token",
+  appId: "your-app",
+  getToken: () => session.getAccessToken(),
+}
+```
+
+The SDK exchanges that app token at Gateway for an MCP-facing token. External
+MCP clients can still use the same Gateway-backed server through standard OAuth.
+
 ### `clientTools`
 
 App-owned functions the agent can call locally for UI work or host orchestration.
@@ -201,11 +227,13 @@ Extra host context or policy instructions for the agent.
 
 ## OAuth
 
-If an MCP server needs user-scoped OAuth:
+If an external MCP client needs user-scoped OAuth:
 
 - pass `userIdentity`
 - let Emcy manage the popup flow by default
 - override with `onAuthRequired` only when you need custom host auth UX
+
+For embedded apps, prefer `auth.mode = "app-token"` instead of a popup flow.
 
 ## Localhost defaults
 

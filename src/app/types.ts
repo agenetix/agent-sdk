@@ -5,6 +5,7 @@ import type {
   ClientToolsMap as RuntimeClientToolsMap,
   ConversationFeedback,
   ConversationFeedbackSentiment,
+  EmcyAppTokenAuthConfig,
   EmcyEmbeddedAuthIdentity,
   EmcyStorageLike,
   McpServerAuthConfig,
@@ -119,6 +120,7 @@ export interface AppAgentConfig {
   getAuthToken?: () => Promise<string | undefined>;
   appSessionKey?: string | null;
   userIdentity?: AppAgentUserIdentity;
+  auth?: EmcyAppTokenAuthConfig;
   useCookies?: boolean;
   externalUserId?: string;
   appContext?: Record<string, unknown>;

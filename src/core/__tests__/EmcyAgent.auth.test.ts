@@ -741,6 +741,103 @@ describe('EmcyAgent auth behavior', () => {
     }]);
   });
 
+  it('exchanges the host app token for Gateway MCP auth when app-token auth is configured', async () => {
+    const gatewayMcpUrl = 'https://api.emcy.test/api/v1/gateway/gw_todo-local/mcp';
+    const exchangeUrl = 'https://api.emcy.test/api/v1/gateway/gw_todo-local/embedded/exchange';
+    const getToken = vi.fn(async () => 'host-app-access-token');
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      const body = typeof init?.body === 'string' ? init.body : '';
+
+      if (url === exchangeUrl) {
+        return Response.json({
+          access_token: 'gateway-mcp-token',
+          token_type: 'Bearer',
+          expires_in: 900,
+          scope: 'checklists.read checklists.write',
+          resource: gatewayMcpUrl,
+        });
+      }
+
+      if (url === gatewayMcpUrl && body.includes('"method":"initialize"')) {
+        const headers = init?.headers as Record<string, string> | undefined;
+        expect(headers?.Authorization).toBe('Bearer gateway-mcp-token');
+        return new Response('{}', {
+          status: 200,
+          headers: {
+            'mcp-session-id': 'session-1',
+          },
+        });
+      }
+
+      if (url === gatewayMcpUrl && body.includes('"method":"notifications/initialized"')) {
+        const headers = init?.headers as Record<string, string> | undefined;
+        expect(headers?.Authorization).toBe('Bearer gateway-mcp-token');
+        return new Response(null, { status: 202 });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const authConfig: McpServerAuthConfig = {
+      authType: 'oauth2',
+      resource: gatewayMcpUrl,
+      scopes: ['checklists.read', 'checklists.write'],
+    };
+    const agent = new EmcyAgent({
+      apiKey: 'emcy-test-key',
+      agentId: 'ag_todo_local',
+      auth: {
+        mode: 'app-token',
+        appId: 'checklistsquad',
+        getToken,
+      },
+    });
+    (agent as unknown as { agentConfig: AgentConfigResponse }).agentConfig = {
+      agentId: 'ag_todo_local',
+      name: 'Todo Agent',
+      conversationResumeVersion: 'resume_v1',
+      mcpServers: [
+        {
+          id: 'server_todo',
+          name: 'Todo MCP',
+          url: gatewayMcpUrl,
+          authStatus: 'needs_auth',
+          authConfig,
+        },
+      ],
+      widgetConfig: null,
+    };
+
+    const authenticated = await agent.authenticate(gatewayMcpUrl);
+
+    expect(authenticated).toBe(true);
+    expect(getToken).toHaveBeenCalledTimes(1);
+    const exchangeCall = fetchMock.mock.calls.find(([input]) => (
+      (typeof input === 'string' ? input : input.toString()) === exchangeUrl
+    ));
+    expect(exchangeCall).toBeTruthy();
+    const exchangeInit = exchangeCall?.[1] as RequestInit;
+    expect(exchangeInit.method).toBe('POST');
+    expect(exchangeInit.headers).toMatchObject({
+      Authorization: 'Bearer host-app-access-token',
+      'x-emcy-embedded-app-id': 'checklistsquad',
+    });
+    expect(JSON.parse(exchangeInit.body as string)).toEqual({
+      appId: 'checklistsquad',
+      agentId: 'ag_todo_local',
+      resource: gatewayMcpUrl,
+      scopes: ['checklists.read', 'checklists.write'],
+    });
+    expect(agent.getMcpServers()).toEqual([{
+      url: gatewayMcpUrl,
+      name: 'Todo MCP',
+      authStatus: 'connected',
+      canSignOut: true,
+    }]);
+  });
+
   it('signs out standalone OAuth servers by clearing local auth state', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
