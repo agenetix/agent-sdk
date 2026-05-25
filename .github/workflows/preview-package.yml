@@ -71,7 +71,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Verify preview package
-        run: npm view "${{ steps.preview.outputs.package_ref }}" version
+        run: |
+          for attempt in {1..12}; do
+            if npm view "${{ steps.preview.outputs.package_ref }}" version; then
+              exit 0
+            fi
+
+            echo "Preview package not visible yet; retrying in 10s (${attempt}/12)."
+            sleep 10
+          done
+
+          npm view "${{ steps.preview.outputs.package_ref }}" version
 
       - name: Comment package preview
         uses: actions/github-script@v7
