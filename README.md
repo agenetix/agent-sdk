@@ -214,8 +214,14 @@ auth: {
 }
 ```
 
-The SDK exchanges that app token at Gateway for an MCP-facing token. External
-MCP clients can still use the same Gateway-backed server through standard OAuth.
+`getToken` should return the current app token each time it is called. If your
+auth library refreshes tokens, read from that current session source rather than
+capturing a token from the first render.
+
+The SDK exchanges that app token at Gateway for an MCP-facing token without
+OAuth client registration. External MCP clients can still use the same
+Gateway-backed server through standard OAuth discovery, registration, and
+authorization.
 
 ### `clientTools`
 

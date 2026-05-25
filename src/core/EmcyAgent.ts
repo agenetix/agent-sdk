@@ -2240,8 +2240,9 @@ export class EmcyAgent {
       if (authConfig) {
         const isBuiltInPopupAuth =
           (this.config.onAuthRequired as BuiltInPopupAuthHandler).__emcyBuiltinPopupAuth === true;
+        const isAppTokenAuth = this.config.auth?.mode === 'app-token';
         const authConfigForHandler =
-          authConfig.authType === 'oauth2' && !isBuiltInPopupAuth
+          authConfig.authType === 'oauth2' && !isBuiltInPopupAuth && !isAppTokenAuth
             ? await this.resolveOAuthClientRegistration(authConfig)
             : authConfig;
         if (authConfigForHandler) {

@@ -782,6 +782,9 @@ describe('EmcyAgent auth behavior', () => {
 
     const authConfig: McpServerAuthConfig = {
       authType: 'oauth2',
+      authorizationEndpoint: 'https://auth.emcy.test/oauth/authorize',
+      tokenEndpoint: 'https://auth.emcy.test/oauth/token',
+      registrationEndpoint: 'https://auth.emcy.test/connect/register',
       resource: gatewayMcpUrl,
       scopes: ['checklists.read', 'checklists.write'],
     };
@@ -818,6 +821,10 @@ describe('EmcyAgent auth behavior', () => {
       (typeof input === 'string' ? input : input.toString()) === exchangeUrl
     ));
     expect(exchangeCall).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://auth.emcy.test/connect/register',
+      expect.any(Object),
+    );
     const exchangeInit = exchangeCall?.[1] as RequestInit;
     expect(exchangeInit.method).toBe('POST');
     expect(exchangeInit.headers).toMatchObject({
