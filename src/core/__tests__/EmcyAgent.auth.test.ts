@@ -813,6 +813,10 @@ describe('EmcyAgent auth behavior', () => {
       widgetConfig: null,
     };
 
+    // React bindings refresh dynamic auth handlers after mount. Passing no
+    // custom handler must not clear the app-token handler configured above.
+    agent.setOnAuthRequired(undefined);
+
     const authenticated = await agent.authenticate(gatewayMcpUrl);
 
     expect(authenticated).toBe(true);

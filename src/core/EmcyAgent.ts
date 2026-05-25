@@ -821,12 +821,18 @@ export class EmcyAgent {
     return this.config.oauthClientMetadataUrl ?? DEFAULT_OAUTH_CLIENT_METADATA_URL;
   }
 
+  private getDefaultAuthRequiredHandler(): EmcyAgentConfig['onAuthRequired'] {
+    return this.config.auth?.mode === 'app-token'
+      ? createAppTokenAuthHandler(this.config.agentId, this.config.auth)
+      : undefined;
+  }
+
   setOnAuthRequired(
     onAuthRequired: EmcyAgentConfig['onAuthRequired'],
   ): void {
     this.config = {
       ...this.config,
-      onAuthRequired,
+      onAuthRequired: onAuthRequired ?? this.getDefaultAuthRequiredHandler(),
     };
   }
 
