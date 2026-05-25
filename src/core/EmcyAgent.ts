@@ -14,6 +14,7 @@ import type {
   EmcyAgentConfig,
   SseContentDelta,
   McpServerAuthConfig,
+  EmcyAppTokenAuthConfig,
   OAuthTokenResponse,
   ProtectedResourceMetadata,
   SseError,
@@ -113,6 +114,98 @@ function getDefaultOAuthCallbackUrl(agentServiceUrl?: string): string {
 
 function getDefaultOAuthClientMetadataUrl(agentServiceUrl?: string): string {
   return `${getDefaultOAuthHelperOrigin(agentServiceUrl)}/.well-known/oauth-client-metadata.json`;
+}
+
+function buildEmbeddedExchangeUrl(mcpServerUrl: string): string {
+  const url = new URL(mcpServerUrl);
+  if (/\/mcp\/?$/i.test(url.pathname)) {
+    url.pathname = url.pathname.replace(/\/mcp\/?$/i, '/embedded/exchange');
+  } else {
+    url.pathname = `${url.pathname.replace(/\/$/, '')}/embedded/exchange`;
+  }
+  return url.toString();
+}
+
+function normalizeOAuthTokenResponse(
+  payload: Record<string, unknown>,
+  authConfig: McpServerAuthConfig,
+): OAuthTokenResponse | undefined {
+  const accessToken = typeof payload.accessToken === 'string'
+    ? payload.accessToken
+    : typeof payload.access_token === 'string'
+      ? payload.access_token
+      : '';
+  if (!accessToken) {
+    return undefined;
+  }
+
+  return {
+    accessToken,
+    refreshToken: typeof payload.refreshToken === 'string'
+      ? payload.refreshToken
+      : typeof payload.refresh_token === 'string'
+        ? payload.refresh_token
+        : undefined,
+    expiresIn: typeof payload.expiresIn === 'number'
+      ? payload.expiresIn
+      : typeof payload.expires_in === 'number'
+        ? payload.expires_in
+        : undefined,
+    tokenType: typeof payload.tokenType === 'string'
+      ? payload.tokenType
+      : typeof payload.token_type === 'string'
+        ? payload.token_type
+        : 'Bearer',
+    resolvedAuthConfig: authConfig,
+  };
+}
+
+function createAppTokenAuthHandler(
+  agentId: string,
+  auth: EmcyAppTokenAuthConfig,
+): EmcyAgentConfig['onAuthRequired'] {
+  return async (mcpServerUrl: string, authConfig: McpServerAuthConfig): Promise<OAuthTokenResponse | undefined> => {
+    const appToken = await auth.getToken();
+    const trimmedToken = appToken?.trim();
+    if (!trimmedToken) {
+      return undefined;
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${trimmedToken}`,
+    };
+    if (auth.appId?.trim()) {
+      headers['x-emcy-embedded-app-id'] = auth.appId.trim();
+    }
+
+    const body: Record<string, unknown> = {
+      agentId,
+      resource: authConfig.resource ?? mcpServerUrl,
+      scopes: authConfig.scopes,
+    };
+    if (auth.appId?.trim()) {
+      body.appId = auth.appId.trim();
+    }
+
+    const response = await fetch(buildEmbeddedExchangeUrl(mcpServerUrl), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
+    if (!response.ok) {
+      const description = typeof payload?.error_description === 'string'
+        ? payload.error_description
+        : typeof payload?.error === 'string'
+          ? payload.error
+          : `App token exchange failed (${response.status}).`;
+      throw new Error(description);
+    }
+
+    return normalizeOAuthTokenResponse(payload ?? {}, authConfig);
+  };
 }
 
 function extractErrorMessage(payload: unknown): string | null {
@@ -263,12 +356,16 @@ export class EmcyAgent {
   private audioTurnState: AudioTurnState | null = null;
 
   constructor(config: EmcyAgentConfig) {
+    const appTokenAuthHandler = config.auth?.mode === 'app-token'
+      ? createAppTokenAuthHandler(config.agentId, config.auth)
+      : undefined;
     this.config = {
       ...config,
       agentServiceUrl: config.agentServiceUrl ?? 'https://api.emcy.ai',
       oauthCallbackUrl: config.oauthCallbackUrl ?? getDefaultOAuthCallbackUrl(config.agentServiceUrl),
       oauthClientMetadataUrl:
         config.oauthClientMetadataUrl ?? getDefaultOAuthClientMetadataUrl(config.agentServiceUrl),
+      onAuthRequired: config.onAuthRequired ?? appTokenAuthHandler,
     };
     this.audioState = this.buildAudioState({ status: 'idle' });
   }
@@ -732,12 +829,18 @@ export class EmcyAgent {
     return this.config.oauthClientMetadataUrl ?? DEFAULT_OAUTH_CLIENT_METADATA_URL;
   }
 
+  private getDefaultAuthRequiredHandler(): EmcyAgentConfig['onAuthRequired'] {
+    return this.config.auth?.mode === 'app-token'
+      ? createAppTokenAuthHandler(this.config.agentId, this.config.auth)
+      : undefined;
+  }
+
   setOnAuthRequired(
     onAuthRequired: EmcyAgentConfig['onAuthRequired'],
   ): void {
     this.config = {
       ...this.config,
-      onAuthRequired,
+      onAuthRequired: onAuthRequired ?? this.getDefaultAuthRequiredHandler(),
     };
   }
 
@@ -2151,8 +2254,9 @@ export class EmcyAgent {
       if (authConfig) {
         const isBuiltInPopupAuth =
           (this.config.onAuthRequired as BuiltInPopupAuthHandler).__emcyBuiltinPopupAuth === true;
+        const isAppTokenAuth = this.config.auth?.mode === 'app-token';
         const authConfigForHandler =
-          authConfig.authType === 'oauth2' && !isBuiltInPopupAuth
+          authConfig.authType === 'oauth2' && !isBuiltInPopupAuth && !isAppTokenAuth
             ? await this.resolveOAuthClientRegistration(authConfig)
             : authConfig;
         if (authConfigForHandler) {

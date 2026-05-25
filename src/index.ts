@@ -5,6 +5,7 @@ export type {
   ClientToolDefinition,
   ClientToolParameter,
   ClientToolsMap,
+  EmcyAppTokenAuthConfig,
   EmcyAgentConfig,
   EmcyEmbeddedAuthConfig,
   EmcyEmbeddedAuthIdentity,
