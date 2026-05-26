@@ -16,6 +16,7 @@ export type {
   ConversationMessagesPage,
   ConversationReplayMessage,
   AgentConfigResponse,
+  AgentBudgetSnapshot,
   McpServerInfo,
   McpServerAuthConfig,
   McpAuthStatusEvent,

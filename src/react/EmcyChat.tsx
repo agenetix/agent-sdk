@@ -78,6 +78,7 @@ function EmcyChatInner({
     conversation,
     composer,
     connections,
+    budget,
     voice,
     popupAuthState,
     startOrRetryPopupAuth,
@@ -161,6 +162,7 @@ function EmcyChatInner({
           isLoadingHistory={conversation.isLoadingHistory}
           isThinking={conversation.isThinking}
           error={conversation.error}
+          budget={budget}
           hasOlderMessages={conversation.hasOlderMessages}
           title={resolvedTitle}
           welcomeMessage={resolvedWelcome}
@@ -218,6 +220,7 @@ function EmcyChatInner({
             isLoadingHistory={conversation.isLoadingHistory}
             isThinking={conversation.isThinking}
             error={conversation.error}
+            budget={budget}
             hasOlderMessages={conversation.hasOlderMessages}
             title={resolvedTitle}
             welcomeMessage={resolvedWelcome}

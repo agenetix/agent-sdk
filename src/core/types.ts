@@ -507,9 +507,30 @@ export interface SseMessageEnd {
   toolCalls: number;
 }
 
+export interface AgentBudgetSnapshot {
+  enabled: boolean;
+  currency: string;
+  identityType: 'identified' | 'anonymous' | string;
+  externalUserId: string;
+  displayName: string;
+  budgetSource: 'explicit' | 'default_user' | 'anonymous' | 'none' | string;
+  windowStartUtc: string;
+  windowEndUtc: string;
+  agentMonthlyBudgetUsd?: number | null;
+  agentCurrentMonthSpendUsd: number;
+  agentRemainingBudgetUsd?: number | null;
+  userMonthlyBudgetUsd?: number | null;
+  userCurrentMonthSpendUsd: number;
+  userRemainingBudgetUsd?: number | null;
+  organizationCreditsRemainingUsd?: number | null;
+  effectiveRemainingUsd?: number | null;
+  status: 'healthy' | 'warning' | 'blocked' | 'disabled' | string;
+}
+
 export interface SseError {
   code: string;
   message: string;
+  budget?: AgentBudgetSnapshot | null;
 }
 
 export type AudioInputStatus =
@@ -575,6 +596,7 @@ export type EmcyAgentEventMap = {
   tool_result: { toolCallId: string; result: unknown; duration: number };
   tool_error: { toolCallId: string; error: string; duration: number };
   message_end: SseMessageEnd;
+  budget_snapshot: AgentBudgetSnapshot;
   error: SseError;
   loading: boolean;
   thinking: boolean;

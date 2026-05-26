@@ -1,5 +1,6 @@
 import { EmcyAgent } from '../core/EmcyAgent';
 import type {
+  AgentBudgetSnapshot,
   AgentConfigResponse,
   AudioInputState,
   ChatMessage,
@@ -82,6 +83,7 @@ type AppAgentInternalState = {
   };
   feedback: AppAgentFeedbackState;
   voice: AudioInputState;
+  budget: AgentBudgetSnapshot | null;
 };
 
 export type AppAgentSnapshot = AppAgentSnapshotBase & {
@@ -261,7 +263,7 @@ export class AppAgentController {
         : undefined,
       useCookies: config.useCookies,
       onAuthRequired,
-      externalUserId: config.externalUserId ?? config.userIdentity?.subject,
+      externalUserId: config.externalUserId ?? config.userIdentity?.subject ?? config.userIdentity?.email,
       context: config.appContext,
       clientTools: this.buildClientTools(config.clientTools),
       conversationHistoryPageSize: config.conversation?.historyPageSize ?? 50,
@@ -304,6 +306,7 @@ export class AppAgentController {
         lastFeedback: null,
       },
       voice: this.agent.getAudioInputState(),
+      budget: this.agent.getBudgetSnapshot(),
     };
 
     this.recomputeDerivedState();
@@ -370,6 +373,7 @@ export class AppAgentController {
         pending: this.state.requests.pending,
       },
       feedback: this.state.feedback,
+      budget: this.state.budget,
       voice: this.state.voice,
     };
   }
@@ -562,6 +566,7 @@ export class AppAgentController {
       connections: {
         items: mergeConnections(mapConnections(this.agent), current.connections.items),
       },
+      budget: this.agent.getBudgetSnapshot(),
     }));
     return result;
   }
@@ -685,6 +690,7 @@ export class AppAgentController {
         connections: {
           items: mergeConnections(mapConnections(this.agent), current.connections.items),
         },
+        budget: this.agent.getBudgetSnapshot(),
       }));
 
       const resumeRecord = await this.readResumeRecord();
@@ -776,6 +782,7 @@ export class AppAgentController {
     this.agent.on('error', this.handleError);
     this.agent.on('mcp_auth_status', this.handleMcpAuthStatus);
     this.agent.on('audio_state', this.handleAudioState);
+    this.agent.on('budget_snapshot', this.handleBudgetSnapshot);
   }
 
   private readonly handleMessage = (message: ChatMessage): void => {
@@ -914,6 +921,7 @@ export class AppAgentController {
   private readonly handleError = (error: SseError): void => {
     this.setState((current) => ({
       ...current,
+      budget: error.budget ?? current.budget,
       conversation: {
         ...current.conversation,
         error,
@@ -941,6 +949,13 @@ export class AppAgentController {
           recoverable: false,
         },
       },
+    }));
+  };
+
+  private readonly handleBudgetSnapshot = (budget: AgentBudgetSnapshot): void => {
+    this.setState((current) => ({
+      ...current,
+      budget,
     }));
   };
 

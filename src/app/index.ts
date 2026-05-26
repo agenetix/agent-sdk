@@ -1,5 +1,6 @@
 export { AppAgentController, createAppAgent } from './controller';
 export { createPlatformAuthHandler } from './oauth';
+export type { AgentBudgetSnapshot } from '../core/types';
 export {
   applyUserMessageOverrides,
   buildRenderedNodes,

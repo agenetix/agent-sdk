@@ -1,4 +1,5 @@
 import type {
+  AgentBudgetSnapshot,
   AgentConfigResponse,
   AudioInputState,
   ChatMessage,
@@ -168,6 +169,7 @@ export interface AppAgentSnapshotBase {
     pending: AppAgentInputRequest[];
   };
   feedback: AppAgentFeedbackState;
+  budget: AgentBudgetSnapshot | null;
   voice: AudioInputState;
 }
 

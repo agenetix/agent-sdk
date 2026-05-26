@@ -46,6 +46,7 @@ export interface UseAppAgentReturn {
   feedback: AppAgentSnapshot['feedback'] & {
     submit: (input: Omit<SubmitConversationFeedbackRequest, 'source'>) => Promise<unknown>;
   };
+  budget: AppAgentSnapshot['budget'];
   voice: AppAgentSnapshot['voice'] & {
     start: () => Promise<void>;
     stop: () => Promise<void>;
@@ -165,6 +166,7 @@ export function useAppAgentBinding(
       ...snapshot.feedback,
       submit: (input) => controller.submitFeedback(input),
     },
+    budget: snapshot.budget,
     voice: {
       ...snapshot.voice,
       start: () => controller.startVoiceInput(),

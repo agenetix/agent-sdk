@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AudioInputState, ChatMessage, SseError } from '../../core/types';
+import type { AgentBudgetSnapshot, AudioInputState, ChatMessage, SseError } from '../../core/types';
 import { StyleInjector } from './AnimationStyles';
 import { McpServerStatusBar } from './McpServerStatusBar';
 import type { McpServerStatus } from './McpServerStatusBar';
@@ -15,6 +15,7 @@ export interface ChatWindowProps {
   isLoadingHistory?: boolean;
   isThinking?: boolean;
   error: SseError | null;
+  budget?: AgentBudgetSnapshot | null;
   hasOlderMessages?: boolean;
   title?: string;
   welcomeMessage?: string;
@@ -43,6 +44,7 @@ export function ChatWindow({
   isLoadingHistory,
   isThinking,
   error,
+  budget,
   hasOlderMessages,
   title = 'AI Assistant',
   welcomeMessage,
@@ -94,6 +96,10 @@ export function ChatWindow({
         </div>
       </div>
 
+      {budget && (
+        <BudgetBar budget={budget} />
+      )}
+
       {/* MCP Server Status */}
       <McpServerStatusBar
         servers={mcpServers || []}
@@ -139,4 +145,56 @@ export function ChatWindow({
       </div>
     </div>
   );
+}
+
+function BudgetBar({ budget }: { budget: AgentBudgetSnapshot }) {
+  const label = budget.identityType === 'anonymous' ? 'Anonymous budget' : 'My budget';
+  const remaining = budget.effectiveRemainingUsd;
+  const source = budgetSourceLabel(budget);
+  const text = remaining == null
+    ? `${label}: ${source}`
+    : `${label}: ${formatUsd(remaining)} remaining`;
+  const statusColor = budget.status === 'blocked'
+    ? '#ef4444'
+    : budget.status === 'warning'
+      ? '#f59e0b'
+      : styles.colors.textSecondary;
+
+  return (
+    <div
+      style={{
+        padding: '8px 16px',
+        borderBottom: `1px solid ${styles.colors.border}`,
+        background: 'rgba(255,255,255,0.02)',
+        fontSize: '12px',
+        color: statusColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+      }}
+    >
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+      {remaining != null && (
+        <span style={{ color: styles.colors.textSecondary, whiteSpace: 'nowrap' }}>{source}</span>
+      )}
+    </div>
+  );
+}
+
+function budgetSourceLabel(budget: AgentBudgetSnapshot): string {
+  if (!budget.enabled) return 'Org AI credits only';
+  if (budget.budgetSource === 'explicit') return 'Override';
+  if (budget.budgetSource === 'default_user') return 'Monthly user allowance';
+  if (budget.budgetSource === 'anonymous') return 'Anonymous pool';
+  return 'Agent cap only';
+}
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }

@@ -1,6 +1,7 @@
 import { parseSseStream } from './sse-client';
 import type {
   AgentConfigResponse,
+  AgentBudgetSnapshot,
   AudioInputState,
   AudioTurnDetectionConfig,
   AuthorizationServerMetadata,
@@ -315,6 +316,7 @@ export class EmcyAgent {
   > &
     EmcyAgentConfig;
   private agentConfig: AgentConfigResponse | null = null;
+  private budgetSnapshot: AgentBudgetSnapshot | null = null;
   private conversationId: string | null = null;
   private messages: ChatMessage[] = [];
   private historyCursor: string | null = null;
@@ -397,6 +399,7 @@ export class EmcyAgent {
     this.agentConfig = await response.json();
     this.audioState = this.buildAudioState({ status: 'idle' });
     this.emit('audio_state', this.audioState);
+    await this.refreshBudgetSnapshot().catch(() => undefined);
 
     if (this.agentConfig?.mcpServers?.length) {
       await Promise.all(
@@ -718,12 +721,17 @@ export class EmcyAgent {
     }));
   }
 
+  private resolveExternalUserId(): string | undefined {
+    const hostIdentity = this.config.embeddedAuth?.hostIdentity;
+    return this.config.externalUserId
+      ?? hostIdentity?.subject
+      ?? hostIdentity?.email
+      ?? undefined;
+  }
+
   private buildExternalUserContext(): Record<string, unknown> | undefined {
     const hostIdentity = this.config.embeddedAuth?.hostIdentity;
-    const id =
-      this.config.externalUserId ??
-      hostIdentity?.subject ??
-      hostIdentity?.email;
+    const id = this.resolveExternalUserId();
 
     const externalUser: Record<string, unknown> = {};
 
@@ -734,6 +742,38 @@ export class EmcyAgent {
     if (hostIdentity?.organizationId) externalUser.organizationId = hostIdentity.organizationId;
 
     return Object.keys(externalUser).length > 0 ? externalUser : undefined;
+  }
+
+  /** Latest runtime budget snapshot for the current SDK identity. */
+  getBudgetSnapshot(): AgentBudgetSnapshot | null {
+    return this.budgetSnapshot;
+  }
+
+  /** Refresh the current SDK identity's budget snapshot from the API. */
+  async refreshBudgetSnapshot(): Promise<AgentBudgetSnapshot | null> {
+    const token = await this.resolveAuthToken();
+    const params = new URLSearchParams();
+    const externalUserId = this.resolveExternalUserId();
+    if (externalUserId) {
+      params.set('externalUserId', externalUserId);
+    }
+    const query = params.toString();
+    const response = await fetch(
+      `${this.config.agentServiceUrl}/api/v1/agents/${this.config.agentId}/budget${query ? `?${query}` : ''}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(await getResponseErrorMessage(response));
+    }
+
+    this.budgetSnapshot = await response.json() as AgentBudgetSnapshot;
+    this.emit('budget_snapshot', this.budgetSnapshot);
+    return this.budgetSnapshot;
   }
 
   /** Whether a request is currently in flight */
@@ -975,7 +1015,7 @@ export class EmcyAgent {
         },
         body: JSON.stringify({
           conversationId: this.conversationId,
-          externalUserId: this.config.externalUserId,
+          externalUserId: this.resolveExternalUserId(),
           externalUser,
         }),
       },
@@ -2298,7 +2338,7 @@ export class EmcyAgent {
       agentId: this.config.agentId,
       conversationId: this.conversationId,
       message,
-      externalUserId: this.config.externalUserId,
+      externalUserId: this.resolveExternalUserId(),
       context: this.config.context,
     };
     const externalUser = this.buildExternalUserContext();
@@ -2574,8 +2614,19 @@ export class EmcyAgent {
           return { type: 'message_end', data };
         }
 
+        case 'budget_snapshot': {
+          const data = event.data as AgentBudgetSnapshot;
+          this.budgetSnapshot = data;
+          this.emit('budget_snapshot', data);
+          break;
+        }
+
         case 'error': {
           const data = event.data as SseError;
+          if (data.budget) {
+            this.budgetSnapshot = data.budget;
+            this.emit('budget_snapshot', data.budget);
+          }
           const errorMsg: ChatMessage = {
             id: crypto.randomUUID(),
             role: 'error',

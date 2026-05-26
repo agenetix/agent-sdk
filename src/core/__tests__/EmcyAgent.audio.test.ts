@@ -67,7 +67,8 @@ describe('EmcyAgent audio input', () => {
     await agent.startVoiceInput();
 
     expect(states).toContain('unsupported_browser');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[1]?.[0])).toContain('/budget');
   });
 
   it('submits the final transcript through the existing composer path', async () => {
