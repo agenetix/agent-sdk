@@ -33,7 +33,7 @@ export interface ClientToolSelection {
 // Configuration
 // ================================================================
 
-export interface EmcyEmbeddedAuthIdentity {
+export interface McpStackEmbeddedAuthIdentity {
   subject?: string;
   email?: string;
   organizationId?: string;
@@ -41,18 +41,18 @@ export interface EmcyEmbeddedAuthIdentity {
   avatarUrl?: string;
 }
 
-export interface EmcyEmbeddedAuthConfig {
-  hostIdentity?: EmcyEmbeddedAuthIdentity;
+export interface McpStackEmbeddedAuthConfig {
+  hostIdentity?: McpStackEmbeddedAuthIdentity;
   mismatchPolicy: 'block_with_switch';
 }
 
-export interface EmcyAppTokenAuthConfig {
+export interface McpStackAppTokenAuthConfig {
   mode: 'app-token';
   appId?: string;
   getToken: () => Promise<string | undefined> | string | undefined;
 }
 
-export interface EmcyExternalUserContext {
+export interface McpStackExternalUserContext {
   id?: string;
   email?: string;
   displayName?: string;
@@ -60,7 +60,7 @@ export interface EmcyExternalUserContext {
   organizationId?: string;
 }
 
-export interface EmcyStorageLike {
+export interface McpStackStorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
@@ -110,7 +110,7 @@ export interface AudioTurnDetectionConfig {
   noiseMultiplier?: number;
 }
 
-export interface EmcyAudioInputConfig {
+export interface McpStackAudioInputConfig {
   /**
    * SDK-owned turn detection configuration. Consumer apps can tune it, but
    * they do not need to implement their own microphone VAD.
@@ -118,19 +118,19 @@ export interface EmcyAudioInputConfig {
   turnDetection?: AudioTurnDetectionConfig;
 }
 
-export interface EmcyAgentConfig {
-  /** API key for authenticating with the Emcy API */
+export interface McpStackAgentConfig {
+  /** API key for authenticating with the MCP Stack API */
   apiKey: string;
 
-  /** Agent ID from the Emcy dashboard */
+  /** Agent ID from the MCP Stack dashboard */
   agentId: string;
 
-  /** Emcy API URL. Defaults to https://api.emcy.ai */
+  /** MCP Stack API URL. Defaults to https://api.mcpstack.com */
   agentServiceUrl?: string;
 
   /**
    * Callback URL used by the standalone popup OAuth flow.
-   * Defaults to the hosted Emcy callback page so downstream auth servers
+   * Defaults to the hosted MCP Stack callback page so downstream auth servers
    * only need to allow a single redirect URI.
    */
   oauthCallbackUrl?: string;
@@ -142,7 +142,7 @@ export interface EmcyAgentConfig {
   oauthClientMetadataUrl?: string;
 
   /**
-   * Callback to get the auth token for Emcy API requests.
+   * Callback to get the auth token for MCP Stack API requests.
    * If provided, called before each chat API request.
    * Use this when your session token may expire and needs refresh (e.g., dashboard playground).
    * If not provided, uses the static `apiKey` value.
@@ -158,10 +158,10 @@ export interface EmcyAgentConfig {
 
   /**
    * Embedded popup auth settings.
-   * Use this to tell Emcy which host-app user is currently signed in so
+   * Use this to tell MCP Stack which host-app user is currently signed in so
    * the built-in popup flow can prefer the same downstream account.
    */
-  embeddedAuth?: EmcyEmbeddedAuthConfig;
+  embeddedAuth?: McpStackEmbeddedAuthConfig;
 
   /**
    * App-owned MCP auth for embedded products.
@@ -169,7 +169,7 @@ export interface EmcyAgentConfig {
    * short-lived app access token. The SDK exchanges that token at Gateway for
    * an MCP-facing token without opening a second sign-in window.
    */
-  auth?: EmcyAppTokenAuthConfig;
+  auth?: McpStackAppTokenAuthConfig;
 
   /**
    * If true, MCP server calls include cookies (for cookie-based auth).
@@ -194,7 +194,7 @@ export interface EmcyAgentConfig {
   context?: Record<string, unknown>;
 
   /** Optional: microphone input behavior. */
-  audioInput?: EmcyAudioInputConfig;
+  audioInput?: McpStackAudioInputConfig;
 
   /**
    * Optional: resume an existing server-side conversation on init.
@@ -218,7 +218,7 @@ export interface EmcyAgentConfig {
    * Optional persistent storage override used for MCP auth/session artifacts.
    * If omitted, the runtime falls back to `localStorage` when available.
    */
-  storage?: EmcyStorageLike | null;
+  storage?: McpStackStorageLike | null;
 }
 
 // ================================================================
@@ -580,7 +580,7 @@ export interface AudioActivityEvent {
 }
 
 // ================================================================
-// Events emitted by EmcyAgent
+// Events emitted by McpStackAgent
 // ================================================================
 
 export interface McpAuthStatusEvent {
@@ -589,7 +589,7 @@ export interface McpAuthStatusEvent {
   authStatus: 'connected' | 'needs_auth';
 }
 
-export type EmcyAgentEventMap = {
+export type McpStackAgentEventMap = {
   message: ChatMessage;
   content_delta: SseContentDelta;
   tool_call: SseToolCall;
@@ -607,4 +607,4 @@ export type EmcyAgentEventMap = {
   audio_transcript_final: AudioTranscriptFinalEvent;
 };
 
-export type EmcyAgentEvent = keyof EmcyAgentEventMap;
+export type McpStackAgentEvent = keyof McpStackAgentEventMap;

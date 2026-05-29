@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { EmcyAgent } from '../EmcyAgent';
+import { McpStackAgent } from '../EmcyAgent';
 
-describe('EmcyAgent chat external user context', () => {
+describe('McpStackAgent chat external user context', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -10,7 +10,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -19,7 +19,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.externalUserId).toBeUndefined();
         expect(body.externalUser).toEqual({
@@ -45,8 +45,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       embeddedAuth: {
         mismatchPolicy: 'block_with_switch',
@@ -68,7 +68,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -77,7 +77,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.externalUserId).toBe('customer-user-789');
         expect(body.externalUser).toMatchObject({
@@ -100,8 +100,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       externalUserId: 'customer-user-789',
       embeddedAuth: {
@@ -123,7 +123,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -132,7 +132,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.context).toEqual({
           hostRefreshInstruction: 'refresh after mutation',
@@ -148,7 +148,7 @@ describe('EmcyAgent chat external user context', () => {
         );
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat/tool-result') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat/tool-result') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.context).toEqual({
           hostRefreshInstruction: 'refresh after mutation',
@@ -171,8 +171,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       context: {
         hostRefreshInstruction: 'refresh after mutation',
@@ -196,7 +196,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -205,7 +205,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.context).toEqual({
           hostRefreshInstruction: 'refresh from updated context',
@@ -226,8 +226,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       context: {
         hostRefreshInstruction: 'refresh from original context',
@@ -248,7 +248,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -257,7 +257,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         return new Response(
           'event: message_start\ndata: {"conversationId":"conv_test"}\n\n' +
             'event: tool_call\ndata: {"toolCallId":"tool_1","toolName":"getActiveChecklistContext","arguments":{},"mcpServerUrl":"","mcpServerName":"","toolLabel":"getActiveChecklistContext"}\n\n',
@@ -268,7 +268,7 @@ describe('EmcyAgent chat external user context', () => {
         );
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat/tool-result') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat/tool-result') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.result).toEqual({ success: true, active: { id: 'new' } });
 
@@ -287,8 +287,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       clientTools: {
         getActiveChecklistContext: {
@@ -317,7 +317,7 @@ describe('EmcyAgent chat external user context', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json({
           agentId: 'agent_test',
           name: 'Chat Agent',
@@ -326,7 +326,7 @@ describe('EmcyAgent chat external user context', () => {
         });
       }
 
-      if (url === 'https://api.emcy.ai/api/v1/chat') {
+      if (url === 'https://api.mcpstack.com/api/v1/chat') {
         const body = JSON.parse(String(init?.body ?? '{}'));
         expect(body.clientTools).toEqual([
           {
@@ -379,8 +379,8 @@ describe('EmcyAgent chat external user context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       clientTools: {
         highlightItems: {

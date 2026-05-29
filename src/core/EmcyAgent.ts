@@ -10,12 +10,12 @@ import type {
   ConversationMessagesPage,
   ClientToolsMap,
   ClientToolParameter,
-  EmcyAgentEvent,
-  EmcyAgentEventMap,
-  EmcyAgentConfig,
+  McpStackAgentEvent,
+  McpStackAgentEventMap,
+  McpStackAgentConfig,
   SseContentDelta,
   McpServerAuthConfig,
-  EmcyAppTokenAuthConfig,
+  McpStackAppTokenAuthConfig,
   OAuthTokenResponse,
   ProtectedResourceMetadata,
   SseError,
@@ -39,7 +39,7 @@ import {
 
 type EventHandler<T> = (data: T) => void;
 type BuiltInPopupAuthHandler = {
-  __emcyBuiltinPopupAuth?: boolean;
+  __mcpStackBuiltinPopupAuth?: boolean;
 };
 
 type RealtimeTranscriptionSessionResponse = {
@@ -74,8 +74,8 @@ type AudioTurnState = {
 
 const DEFAULT_MCP_PROTOCOL_VERSION = '2025-11-25';
 const DEFAULT_LOCAL_PUBLIC_APP_PORT = '3100';
-const DEFAULT_OAUTH_CALLBACK_URL = 'https://emcy.ai/oauth/callback';
-const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://emcy.ai/.well-known/oauth-client-metadata.json';
+const DEFAULT_OAUTH_CALLBACK_URL = 'https://mcpstack.com/oauth/callback';
+const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://mcpstack.com/.well-known/oauth-client-metadata.json';
 const DEFAULT_AUDIO_TURN_DETECTION: ResolvedAudioTurnDetectionConfig = {
   enabled: true,
   autoSubmit: true,
@@ -163,8 +163,8 @@ function normalizeOAuthTokenResponse(
 
 function createAppTokenAuthHandler(
   agentId: string,
-  auth: EmcyAppTokenAuthConfig,
-): EmcyAgentConfig['onAuthRequired'] {
+  auth: McpStackAppTokenAuthConfig,
+): McpStackAgentConfig['onAuthRequired'] {
   return async (mcpServerUrl: string, authConfig: McpServerAuthConfig): Promise<OAuthTokenResponse | undefined> => {
     const appToken = await auth.getToken();
     const trimmedToken = appToken?.trim();
@@ -177,7 +177,7 @@ function createAppTokenAuthHandler(
       Authorization: `Bearer ${trimmedToken}`,
     };
     if (auth.appId?.trim()) {
-      headers['x-emcy-embedded-app-id'] = auth.appId.trim();
+      headers['x-mcpstack-embedded-app-id'] = auth.appId.trim();
     }
 
     const body: Record<string, unknown> = {
@@ -301,20 +301,20 @@ function parametersToJsonSchema(params: Record<string, ClientToolParameter>): ob
 }
 
 /**
- * Core orchestration class for the Emcy Agent SDK.
+ * Core orchestration class for the MCP Stack Agent SDK.
  * Framework-agnostic — works in any JavaScript environment.
  *
  * Handles:
- * - Communication with the Emcy chat API (SSE streaming)
+ * - Communication with the MCP Stack chat API (SSE streaming)
  * - Tool execution via MCP server (browser-side, with user's auth token)
  * - Conversation state management
  * - Event emission for UI updates
  */
-export class EmcyAgent {
+export class McpStackAgent {
   private config: Required<
-    Pick<EmcyAgentConfig, 'apiKey' | 'agentId' | 'agentServiceUrl'>
+    Pick<McpStackAgentConfig, 'apiKey' | 'agentId' | 'agentServiceUrl'>
   > &
-    EmcyAgentConfig;
+    McpStackAgentConfig;
   private agentConfig: AgentConfigResponse | null = null;
   private budgetSnapshot: AgentBudgetSnapshot | null = null;
   private conversationId: string | null = null;
@@ -357,13 +357,13 @@ export class EmcyAgent {
   private audioFinalTranscript = '';
   private audioTurnState: AudioTurnState | null = null;
 
-  constructor(config: EmcyAgentConfig) {
+  constructor(config: McpStackAgentConfig) {
     const appTokenAuthHandler = config.auth?.mode === 'app-token'
       ? createAppTokenAuthHandler(config.agentId, config.auth)
       : undefined;
     this.config = {
       ...config,
-      agentServiceUrl: config.agentServiceUrl ?? 'https://api.emcy.ai',
+      agentServiceUrl: config.agentServiceUrl ?? 'https://api.mcpstack.com',
       oauthCallbackUrl: config.oauthCallbackUrl ?? getDefaultOAuthCallbackUrl(config.agentServiceUrl),
       oauthClientMetadataUrl:
         config.oauthClientMetadataUrl ?? getDefaultOAuthClientMetadataUrl(config.agentServiceUrl),
@@ -869,14 +869,14 @@ export class EmcyAgent {
     return this.config.oauthClientMetadataUrl ?? DEFAULT_OAUTH_CLIENT_METADATA_URL;
   }
 
-  private getDefaultAuthRequiredHandler(): EmcyAgentConfig['onAuthRequired'] {
+  private getDefaultAuthRequiredHandler(): McpStackAgentConfig['onAuthRequired'] {
     return this.config.auth?.mode === 'app-token'
       ? createAppTokenAuthHandler(this.config.agentId, this.config.auth)
       : undefined;
   }
 
   setOnAuthRequired(
-    onAuthRequired: EmcyAgentConfig['onAuthRequired'],
+    onAuthRequired: McpStackAgentConfig['onAuthRequired'],
   ): void {
     this.config = {
       ...this.config,
@@ -1623,8 +1623,8 @@ export class EmcyAgent {
     const registration = await resolveOAuthRegistration(authConfig, {
       callbackUrl: this.getOAuthCallbackUrl(),
       oauthClientMetadataUrl: this.config.oauthClientMetadataUrl,
-      clientName: 'Emcy MCP Client',
-      clientUri: 'https://emcy.ai',
+      clientName: 'MCP Stack MCP Client',
+      clientUri: 'https://mcpstack.com',
       storage: this.getPersistentStorage(),
     });
 
@@ -1632,7 +1632,7 @@ export class EmcyAgent {
   }
 
   /** Subscribe to events */
-  on<K extends EmcyAgentEvent>(event: K, handler: EventHandler<EmcyAgentEventMap[K]>): void {
+  on<K extends McpStackAgentEvent>(event: K, handler: EventHandler<McpStackAgentEventMap[K]>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -1640,7 +1640,7 @@ export class EmcyAgent {
   }
 
   /** Unsubscribe from events */
-  off<K extends EmcyAgentEvent>(event: K, handler: EventHandler<EmcyAgentEventMap[K]>): void {
+  off<K extends McpStackAgentEvent>(event: K, handler: EventHandler<McpStackAgentEventMap[K]>): void {
     this.listeners.get(event)?.delete(handler as EventHandler<unknown>);
   }
 
@@ -2018,7 +2018,7 @@ export class EmcyAgent {
     }
   }
 
-  private emit<K extends EmcyAgentEvent>(event: K, data: EmcyAgentEventMap[K]): void {
+  private emit<K extends McpStackAgentEvent>(event: K, data: McpStackAgentEventMap[K]): void {
     this.listeners.get(event)?.forEach((handler) => handler(data));
   }
 
@@ -2293,7 +2293,7 @@ export class EmcyAgent {
     if (this.config.onAuthRequired) {
       if (authConfig) {
         const isBuiltInPopupAuth =
-          (this.config.onAuthRequired as BuiltInPopupAuthHandler).__emcyBuiltinPopupAuth === true;
+          (this.config.onAuthRequired as BuiltInPopupAuthHandler).__mcpStackBuiltinPopupAuth === true;
         const isAppTokenAuth = this.config.auth?.mode === 'app-token';
         const authConfigForHandler =
           authConfig.authType === 'oauth2' && !isBuiltInPopupAuth && !isAppTokenAuth
@@ -2736,7 +2736,7 @@ export class EmcyAgent {
       params: {
         protocolVersion: DEFAULT_MCP_PROTOCOL_VERSION,
         capabilities: {},
-        clientInfo: { name: 'emcy-agent-sdk', version: '0.1.0' },
+        clientInfo: { name: 'mcpstack-agent-sdk', version: '0.1.0' },
       },
     });
 
