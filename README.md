@@ -59,24 +59,26 @@ Drop-in web widget:
 import { EmcyChat } from "@emcy/agent-sdk/react-embed";
 
 export function App() {
+  const appSessionKey = [session.organizationId, session.user.id, session.id].join(":");
+
   return (
     <div style={{ height: 640 }}>
       <EmcyChat
-        apiKey="emcy_sk_xxxx"
+        apiKey="emcy_pk_xxxx"
         agentId="ag_xxxxx"
-        appSessionKey={session.id}
-    userIdentity={{
-      subject: session.user.id,
-      email: session.user.email,
-      organizationId: session.organizationId,
-    }}
-    auth={{
-      mode: "app-token",
-      getToken: () => session.getAccessToken(),
-    }}
-    mode="inline"
-    title="Support Agent"
-  />
+        appSessionKey={appSessionKey}
+        userIdentity={{
+          subject: session.user.id,
+          email: session.user.email,
+          organizationId: session.organizationId,
+        }}
+        auth={{
+          mode: "app-token",
+          getToken: () => session.getAccessToken(),
+        }}
+        mode="inline"
+        title="Support Agent"
+      />
     </div>
   );
 }
@@ -89,9 +91,9 @@ import { useAppAgent } from "@emcy/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
-    apiKey: "emcy_sk_xxxx",
+    apiKey: "emcy_pk_xxxx",
     agentId: "ag_xxxxx",
-    appSessionKey: session.id,
+    appSessionKey: [session.organizationId, session.user.id, session.id].join(":"),
     userIdentity: {
       subject: session.user.id,
       email: session.user.email,
@@ -116,13 +118,17 @@ import { useAppAgent } from "@emcy/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
-    apiKey: "emcy_sk_xxxx",
+    apiKey: "emcy_pk_xxxx",
     agentId: "ag_xxxxx",
-    appSessionKey: session.id,
+    appSessionKey: [session.organizationId, session.user.id, session.id].join(":"),
     userIdentity: {
       subject: session.user.id,
       email: session.user.email,
       organizationId: session.organizationId,
+    },
+    auth: {
+      mode: "app-token",
+      getToken: () => session.getAccessToken(),
     },
     clientTools,
     appContext,
@@ -140,9 +146,18 @@ export function AssistantShell() {
 import { EmcyAgent } from "@emcy/agent-sdk";
 
 const agent = new EmcyAgent({
-  apiKey: "emcy_sk_xxxx",
+  apiKey: "emcy_pk_xxxx",
   agentId: "ag_xxxxx",
-  authSessionKey: session.id,
+  appSessionKey: [session.organizationId, session.user.id, session.id].join(":"),
+  userIdentity: {
+    subject: session.user.id,
+    email: session.user.email,
+    organizationId: session.organizationId,
+  },
+  auth: {
+    mode: "app-token",
+    getToken: () => session.getAccessToken(),
+  },
 });
 
 await agent.init();
@@ -158,7 +173,7 @@ Apps can tune the behavior without implementing their own VAD:
 
 ```ts
 const agent = new EmcyAgent({
-  apiKey: "emcy_sk_xxxx",
+  apiKey: "emcy_pk_xxxx",
   agentId: "ag_xxxxx",
   audioInput: {
     turnDetection: {
@@ -175,7 +190,7 @@ const agent = new EmcyAgent({
 
 ### `apiKey`
 
-Your Emcy API key.
+Your agent public key (`emcy_pk_*`). Public keys are designed for browser and native app code. Keep service-account keys (`emcy_sk_*`) on your backend.
 
 ### `agentId`
 
@@ -219,6 +234,11 @@ The SDK exchanges that app token at Gateway for an MCP-facing token without
 OAuth client registration. External MCP clients can still use the same
 Gateway-backed server through standard OAuth discovery, registration, and
 authorization.
+
+Runtime API calls keep the agent public key in the `Authorization` header and
+forward your app token separately as `X-Emcy-App-Token`. This lets MCP Stack
+validate the embed key, the allowed browser origin, and the signed-in app user
+without treating the public key as a secret.
 
 ### `clientTools`
 

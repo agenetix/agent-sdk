@@ -56,6 +56,80 @@ describe('EmcyAgent auth behavior', () => {
     localStorage.clear();
   });
 
+  it('keeps the public key as the runtime bearer token and forwards the app token header', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
+
+      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+        return Response.json({
+          agentId: 'agent_test',
+          name: 'Runtime Agent',
+          conversationResumeVersion: 'resume_v1',
+          mcpServers: [],
+          widgetConfig: null,
+        } satisfies AgentConfigResponse);
+      }
+
+      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/budget?externalUserId=user_123') {
+        return Response.json({
+          enabled: true,
+          currency: 'USD',
+          identityType: 'identified',
+          externalUserId: 'user_123',
+          displayName: 'User 123',
+          budgetSource: 'default_user',
+          windowStartUtc: '2026-05-01T00:00:00Z',
+          windowEndUtc: '2026-06-01T00:00:00Z',
+          agentCurrentMonthSpendUsd: 0,
+          agentRemainingBudgetUsd: 100,
+          userCurrentMonthSpendUsd: 0,
+          userRemainingBudgetUsd: 5,
+          status: 'healthy',
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const getToken = vi.fn(async () => 'host-app-token');
+    const agent = new EmcyAgent({
+      apiKey: 'emcy_pk_public',
+      agentId: 'agent_test',
+      externalUserId: 'user_123',
+      auth: {
+        mode: 'app-token',
+        appId: 'todo-app',
+        getToken,
+      },
+    });
+
+    await agent.init();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.emcy.ai/api/v1/agents/agent_test/config',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer emcy_pk_public',
+          'X-Emcy-App-Token': 'host-app-token',
+          'X-Emcy-Embedded-App-Id': 'todo-app',
+        }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.emcy.ai/api/v1/agents/agent_test/budget?externalUserId=user_123',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer emcy_pk_public',
+          'X-Emcy-App-Token': 'host-app-token',
+          'X-Emcy-Embedded-App-Id': 'todo-app',
+        }),
+      }),
+    );
+    expect(getToken).toHaveBeenCalledTimes(2);
+  });
+
   it('discovers protected-resource metadata, auth metadata, and registration capabilities during init', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
