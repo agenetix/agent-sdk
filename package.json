@@ -1,11 +1,11 @@
 {
-  "name": "@emcy/agent-sdk",
-  "version": "0.12.7",
+  "name": "@mcpstack/agent-sdk",
+  "version": "1.0.0",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "Embeddable AI chat widget powered by MCP. Add an LLM-powered agent to your web app.",
+  "description": "Embeddable MCP Stack chat widget powered by MCP. Add an LLM-powered agent to your web app.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -74,7 +74,7 @@
     "vitest": "^4.1.0"
   },
   "keywords": [
-    "emcy",
+    "mcpstack",
     "mcp",
     "ai",
     "chat",
@@ -86,9 +86,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/emcy-ai/agent-sdk.git"
+    "url": "git+https://github.com/emcy-ai/mcpstack-agent-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/emcy-ai/agent-sdk/issues"
-  }
+    "url": "https://github.com/emcy-ai/mcpstack-agent-sdk/issues"
+  },
+  "author": "MCP Stack <hello@mcpstack.com>",
+  "homepage": "https://mcpstack.com"
 }

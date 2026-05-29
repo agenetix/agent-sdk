@@ -5,7 +5,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { OAuthPopup } from './components/OAuthPopup';
 import { WidgetButton } from './components/WidgetButton';
 
-export interface EmcyChatProps extends AppAgentConfig {
+export interface McpStackChatProps extends AppAgentConfig {
   /**
    * Display mode:
    * - 'floating': chat popup with a fixed button (default)
@@ -24,7 +24,7 @@ export interface EmcyChatProps extends AppAgentConfig {
   onToolActivity?: () => void;
 }
 
-export function EmcyChat({
+export function McpStackChat({
   mode = 'floating',
   title,
   welcomeMessage,
@@ -32,10 +32,10 @@ export function EmcyChat({
   defaultOpen = false,
   onToolActivity,
   ...agentConfig
-}: EmcyChatProps) {
+}: McpStackChatProps) {
   return (
     <AppAgentProvider {...agentConfig}>
-      <EmcyChatInner
+      <McpStackChatInner
         mode={mode}
         title={title}
         welcomeMessage={welcomeMessage}
@@ -48,7 +48,7 @@ export function EmcyChat({
   );
 }
 
-interface EmcyChatInnerProps {
+interface McpStackChatInnerProps {
   mode: 'floating' | 'inline';
   title?: string;
   welcomeMessage?: string;
@@ -60,7 +60,7 @@ interface EmcyChatInnerProps {
 
 type AnimState = 'closed' | 'opening' | 'open' | 'closing';
 
-function EmcyChatInner({
+function McpStackChatInner({
   mode,
   title,
   welcomeMessage,
@@ -68,7 +68,7 @@ function EmcyChatInner({
   defaultOpen,
   onToolActivity,
   hasUserIdentity,
-}: EmcyChatInnerProps) {
+}: McpStackChatInnerProps) {
   const [animState, setAnimState] = useState<AnimState>(defaultOpen ? 'open' : 'closed');
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wasLoadingRef = useRef(false);
@@ -206,9 +206,9 @@ function EmcyChatInner({
         <div
           className={
             animState === 'opening'
-              ? 'emcy-fadeInScale'
+              ? 'mcpstack-fadeInScale'
               : animState === 'closing'
-                ? 'emcy-fadeOut'
+                ? 'mcpstack-fadeOut'
                 : undefined
           }
           style={{ position: 'contents' as never }}

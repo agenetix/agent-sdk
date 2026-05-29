@@ -1,5 +1,5 @@
 /**
- * Parses an SSE stream from the Emcy chat API.
+ * Parses an SSE stream from the MCP Stack chat API.
  * Yields parsed events as they arrive.
  */
 export interface ParsedSseEvent {

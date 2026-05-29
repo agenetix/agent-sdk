@@ -6,16 +6,16 @@ import type {
   ClientToolsMap as RuntimeClientToolsMap,
   ConversationFeedback,
   ConversationFeedbackSentiment,
-  EmcyAppTokenAuthConfig,
-  EmcyEmbeddedAuthIdentity,
-  EmcyStorageLike,
+  McpStackAppTokenAuthConfig,
+  McpStackEmbeddedAuthIdentity,
+  McpStackStorageLike,
   McpServerAuthConfig,
   OAuthTokenResponse,
   SseError,
 } from '../core/types';
 
 export type ClientToolsMap = RuntimeClientToolsMap;
-export type AppAgentUserIdentity = EmcyEmbeddedAuthIdentity;
+export type AppAgentUserIdentity = McpStackEmbeddedAuthIdentity;
 
 export interface KeyValueStore {
   getItem(key: string): Promise<string | null> | string | null;
@@ -121,7 +121,7 @@ export interface AppAgentConfig {
   getAuthToken?: () => Promise<string | undefined>;
   appSessionKey?: string | null;
   userIdentity?: AppAgentUserIdentity;
-  auth?: EmcyAppTokenAuthConfig;
+  auth?: McpStackAppTokenAuthConfig;
   useCookies?: boolean;
   externalUserId?: string;
   appContext?: Record<string, unknown>;
@@ -133,7 +133,7 @@ export interface AppAgentConfig {
     historyPageSize?: number;
   };
   feedbackSource?: string;
-  storage?: EmcyStorageLike | null;
+  storage?: McpStackStorageLike | null;
 }
 
 export interface AppAgentLifecycleState {

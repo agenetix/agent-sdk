@@ -1,5 +1,5 @@
 import type {
-  EmcyStorageLike,
+  McpStackStorageLike,
   McpClientRegistrationPreference,
   McpResolvedClientMode,
   McpServerAuthConfig,
@@ -9,9 +9,9 @@ import type {
   StoredOAuthRegistration,
 } from '../types';
 
-const REGISTRATION_STORAGE_PREFIX = 'emcy_oauth_registration_';
+const REGISTRATION_STORAGE_PREFIX = 'mcpstack_oauth_registration_';
 
-function getStorage(storage?: EmcyStorageLike | null): EmcyStorageLike | null {
+function getStorage(storage?: McpStackStorageLike | null): McpStackStorageLike | null {
   if (storage) {
     return storage;
   }
@@ -85,7 +85,7 @@ export function buildTokenCacheKey(
 
 export function loadStoredRegistration(
   cacheKey: string,
-  storage?: EmcyStorageLike | null,
+  storage?: McpStackStorageLike | null,
 ): StoredOAuthRegistration | null {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return null;
@@ -101,7 +101,7 @@ export function loadStoredRegistration(
 
 export function saveStoredRegistration(
   registration: StoredOAuthRegistration,
-  storage?: EmcyStorageLike | null,
+  storage?: McpStackStorageLike | null,
 ): void {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return;
@@ -118,7 +118,7 @@ export function saveStoredRegistration(
 
 export function clearStoredRegistration(
   cacheKey: string,
-  storage?: EmcyStorageLike | null,
+  storage?: McpStackStorageLike | null,
 ): void {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return;
@@ -156,7 +156,7 @@ export interface ResolveOAuthRegistrationOptions {
   clientName?: string;
   clientUri?: string;
   fetchImpl?: typeof fetch;
-  storage?: EmcyStorageLike | null;
+  storage?: McpStackStorageLike | null;
 }
 
 function createResolvedRegistration(
@@ -233,7 +233,7 @@ export async function registerPublicClient(
   }
 
   const requestBody: OAuthDynamicClientRegistrationRequest = {
-    client_name: options.clientName ?? 'Emcy MCP Client',
+    client_name: options.clientName ?? 'MCP Stack MCP Client',
     application_type: inferApplicationType(callbackUrl),
     redirect_uris: [callbackUrl],
     grant_types: ['authorization_code', 'refresh_token'],

@@ -30,7 +30,7 @@ export function useAppAgent(
       authConfig: McpServerAuthConfig,
     ) => popupRequestAuthRef.current?.(serverUrl, authConfig) ?? Promise.resolve(undefined);
 
-    (handler as { __emcyBuiltinPopupAuth?: boolean }).__emcyBuiltinPopupAuth = true;
+    (handler as { __mcpStackBuiltinPopupAuth?: boolean }).__mcpStackBuiltinPopupAuth = true;
     return handler;
   }, []);
 

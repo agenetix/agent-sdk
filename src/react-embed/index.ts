@@ -1,5 +1,5 @@
-export { EmcyChat } from '../react/EmcyChat';
-export type { EmcyChatProps } from '../react/EmcyChat';
+export { McpStackChat } from '../react/EmcyChat';
+export type { McpStackChatProps } from '../react/EmcyChat';
 
 export { ChatWindow } from '../react/components/ChatWindow';
 export type { ChatWindowProps } from '../react/components/ChatWindow';

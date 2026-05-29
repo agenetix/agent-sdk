@@ -1,26 +1,26 @@
-# @emcy/agent-sdk
+# @mcpstack/agent-sdk
 
-Use Emcy agents in your app.
+Use MCP Stack agents in your app.
 
 This package now has one public model for custom product integrations: `App Agent`.
 
 ## Install
 
 ```bash
-npm install @emcy/agent-sdk
+npm install @mcpstack/agent-sdk
 ```
 
 ## Package surfaces
 
-### `@emcy/agent-sdk`
+### `@mcpstack/agent-sdk`
 
 Low-level runtime:
 
-- `EmcyAgent`
+- `McpStackAgent`
 - core auth helpers
 - core transport and types
 
-### `@emcy/agent-sdk/app`
+### `@mcpstack/agent-sdk/app`
 
 Framework-agnostic agent experience helpers:
 
@@ -29,7 +29,7 @@ Framework-agnostic agent experience helpers:
 - message / tool derivation helpers
 - resume / pending-turn / formatting helpers
 
-### `@emcy/agent-sdk/react`
+### `@mcpstack/agent-sdk/react`
 
 React app integration:
 
@@ -37,7 +37,7 @@ React app integration:
 - `AppAgentProvider`
 - `useAppAgentContext`
 
-### `@emcy/agent-sdk/react-native`
+### `@mcpstack/agent-sdk/react-native`
 
 React Native app integration:
 
@@ -45,24 +45,24 @@ React Native app integration:
 - `AppAgentProvider`
 - `useAppAgentContext`
 
-### `@emcy/agent-sdk/react-embed`
+### `@mcpstack/agent-sdk/react-embed`
 
 Drop-in web widget:
 
-- `EmcyChat`
+- `McpStackChat`
 
 ## Start here
 
 ### 1. Drop-in web embed
 
 ```tsx
-import { EmcyChat } from "@emcy/agent-sdk/react-embed";
+import { McpStackChat } from "@mcpstack/agent-sdk/react-embed";
 
 export function App() {
   return (
     <div style={{ height: 640 }}>
-      <EmcyChat
-        apiKey="emcy_sk_xxxx"
+      <McpStackChat
+        apiKey="mcpstack_sk_xxxx"
         agentId="ag_xxxxx"
         appSessionKey={session.id}
     userIdentity={{
@@ -85,11 +85,11 @@ export function App() {
 ### 2. Custom React app UI
 
 ```tsx
-import { useAppAgent } from "@emcy/agent-sdk/react";
+import { useAppAgent } from "@mcpstack/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
-    apiKey: "emcy_sk_xxxx",
+    apiKey: "mcpstack_sk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -112,11 +112,11 @@ export function CustomAssistant() {
 ### 3. Custom React Native UI
 
 ```tsx
-import { useAppAgent } from "@emcy/agent-sdk/react-native";
+import { useAppAgent } from "@mcpstack/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
-    apiKey: "emcy_sk_xxxx",
+    apiKey: "mcpstack_sk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -137,10 +137,10 @@ export function AssistantShell() {
 ### 4. Raw runtime
 
 ```ts
-import { EmcyAgent } from "@emcy/agent-sdk";
+import { McpStackAgent } from "@mcpstack/agent-sdk";
 
-const agent = new EmcyAgent({
-  apiKey: "emcy_sk_xxxx",
+const agent = new McpStackAgent({
+  apiKey: "mcpstack_sk_xxxx",
   agentId: "ag_xxxxx",
   authSessionKey: session.id,
 });
@@ -157,8 +157,8 @@ the local noise floor, then commits the utterance after a short trailing pause.
 Apps can tune the behavior without implementing their own VAD:
 
 ```ts
-const agent = new EmcyAgent({
-  apiKey: "emcy_sk_xxxx",
+const agent = new McpStackAgent({
+  apiKey: "mcpstack_sk_xxxx",
   agentId: "ag_xxxxx",
   audioInput: {
     turnDetection: {
@@ -175,7 +175,7 @@ const agent = new EmcyAgent({
 
 ### `apiKey`
 
-Your Emcy API key.
+Your MCP Stack API key.
 
 ### `agentId`
 
@@ -233,7 +233,7 @@ Extra host context or policy instructions for the agent.
 If an external MCP client needs user-scoped OAuth:
 
 - pass `userIdentity`
-- let Emcy manage the popup flow by default
+- let MCP Stack manage the popup flow by default
 - override with `onAuthRequired` only when you need custom host auth UX
 
 For embedded apps, prefer `auth.mode = "app-token"` instead of a popup flow.

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EmcyAgent } from '../EmcyAgent';
+import { McpStackAgent } from '../EmcyAgent';
 import {
   applyResolvedRegistration,
   buildRegistrationCacheKey,
@@ -45,7 +45,7 @@ function createAgentConfigWithAuthStatus(
   return config;
 }
 
-describe('EmcyAgent auth behavior', () => {
+describe('McpStackAgent auth behavior', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
@@ -60,7 +60,7 @@ describe('EmcyAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({ authType: 'oauth2' }));
       }
 
@@ -89,8 +89,8 @@ describe('EmcyAgent auth behavior', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -110,7 +110,7 @@ describe('EmcyAgent auth behavior', () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfigWithAuthStatus(
           {
             authType: 'oauth2',
@@ -124,8 +124,8 @@ describe('EmcyAgent auth behavior', () => {
       throw new Error(`Unexpected fetch: ${url}`);
     }));
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -143,7 +143,7 @@ describe('EmcyAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({ authType: 'oauth2' }));
       }
 
@@ -176,8 +176,8 @@ describe('EmcyAgent auth behavior', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -194,7 +194,7 @@ describe('EmcyAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({
           authType: 'oauth2',
           authorizationServerUrl: 'https://auth.todo.example.com',
@@ -228,8 +228,8 @@ describe('EmcyAgent auth behavior', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -244,7 +244,7 @@ describe('EmcyAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({
           authType: 'oauth2',
           authorizationServerUrl: 'https://auth.todo.example.com',
@@ -279,8 +279,8 @@ describe('EmcyAgent auth behavior', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -291,9 +291,9 @@ describe('EmcyAgent auth behavior', () => {
     expect(authConfig?.manualOverrides).toEqual(['resource']);
   });
 
-  it('defaults local standalone OAuth helpers to the Emcy web origin when agentServiceUrl is localhost', () => {
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+  it('defaults local standalone OAuth helpers to the MCP Stack web origin when agentServiceUrl is localhost', () => {
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       agentServiceUrl: 'http://localhost:5150',
     });
@@ -318,7 +318,7 @@ describe('EmcyAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.emcy.ai/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
         return Response.json(
           { error: 'Invalid or expired API key' },
           { status: 401 },
@@ -330,8 +330,8 @@ describe('EmcyAgent auth behavior', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -346,7 +346,7 @@ describe('EmcyAgent auth behavior', () => {
         const body = (init?.body as URLSearchParams).toString();
         expect(body).toContain('grant_type=refresh_token');
         expect(body).toContain('refresh_token=refresh-token-1');
-        expect(body).toContain('client_id=https%3A%2F%2Femcy.ai%2F.well-known%2Foauth-client-metadata.json');
+        expect(body).toContain('client_id=https%3A%2F%2Fmcpstack.com%2F.well-known%2Foauth-client-metadata.json');
         expect(body).toContain('resource=https%3A%2F%2Ftodo.example.com');
 
         return Response.json({
@@ -366,15 +366,15 @@ describe('EmcyAgent auth behavior', () => {
       authorizationServerUrl: 'https://auth.todo.example.com',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      clientId: 'https://emcy.ai/.well-known/oauth-client-metadata.json',
+      clientId: 'https://mcpstack.com/.well-known/oauth-client-metadata.json',
       clientMode: 'cimd',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
@@ -401,14 +401,14 @@ describe('EmcyAgent auth behavior', () => {
       authorizationServerMetadataUrl:
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
     const registrationCacheKey = buildRegistrationCacheKey(
       baseAuthConfig,
-      'https://emcy.ai/oauth/callback',
+      'https://mcpstack.com/oauth/callback',
       'dcr',
     );
 
@@ -420,7 +420,7 @@ describe('EmcyAgent auth behavior', () => {
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
       clientId: 'dcr-client-123',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -430,7 +430,7 @@ describe('EmcyAgent auth behavior', () => {
       cacheKey: registrationCacheKey,
       mode: 'dcr',
       clientId: 'dcr-client-123',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       authorizationServerUrl: 'https://auth.todo.example.com',
       authorizationServerMetadataUrl:
@@ -438,8 +438,8 @@ describe('EmcyAgent auth behavior', () => {
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
     });
 
-    const firstAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const firstAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
     (firstAgent as unknown as { agentConfig: AgentConfigResponse }).agentConfig =
@@ -453,8 +453,8 @@ describe('EmcyAgent auth behavior', () => {
       resolvedAuthConfig: resolvedDcrAuthConfig,
     });
 
-    const secondAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const secondAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
     (secondAgent as unknown as { agentConfig: AgentConfigResponse }).agentConfig =
@@ -474,13 +474,13 @@ describe('EmcyAgent auth behavior', () => {
       authType: 'oauth2',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
-    const firstAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const firstAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'session-a',
     });
@@ -494,16 +494,16 @@ describe('EmcyAgent auth behavior', () => {
       resolvedAuthConfig: authConfig,
     });
 
-    const sameSessionAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const sameSessionAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'session-a',
     });
     (sameSessionAgent as unknown as { agentConfig: AgentConfigResponse }).agentConfig =
       createAgentConfig(authConfig);
 
-    const otherSessionAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const otherSessionAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'session-b',
     });
@@ -526,13 +526,13 @@ describe('EmcyAgent auth behavior', () => {
       authType: 'oauth2',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
-    const legacyAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const legacyAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
     (legacyAgent as unknown as { agentConfig: AgentConfigResponse }).agentConfig =
@@ -545,8 +545,8 @@ describe('EmcyAgent auth behavior', () => {
       resolvedAuthConfig: authConfig,
     });
 
-    const scopedAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const scopedAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'fresh-session',
     });
@@ -567,14 +567,14 @@ describe('EmcyAgent auth behavior', () => {
       authorizationServerMetadataUrl:
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
     const registrationCacheKey = buildRegistrationCacheKey(
       authConfig,
-      'https://emcy.ai/oauth/callback',
+      'https://mcpstack.com/oauth/callback',
       'dcr',
     );
 
@@ -586,14 +586,14 @@ describe('EmcyAgent auth behavior', () => {
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
       clientId: 'persisted-dcr-client',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: MCP_SERVER_URL,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
 
-    const scopedAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const scopedAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'logout-session',
     });
@@ -607,14 +607,14 @@ describe('EmcyAgent auth behavior', () => {
       resolvedAuthConfig: authConfig,
     });
 
-    localStorage.setItem('emcy-oauth-callback:logout-state', JSON.stringify({ token: 'pending' }));
+    localStorage.setItem('mcpstack-oauth-callback:logout-state', JSON.stringify({ token: 'pending' }));
     clearPersistedMcpAuthState({ authSessionKey: 'logout-session' });
 
-    expect(localStorage.getItem('emcy-oauth-callback:logout-state')).toBeNull();
+    expect(localStorage.getItem('mcpstack-oauth-callback:logout-state')).toBeNull();
     expect(loadStoredRegistration(registrationCacheKey)?.clientId).toBe('persisted-dcr-client');
 
-    const postScopedClearAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const postScopedClearAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'logout-session',
     });
@@ -627,8 +627,8 @@ describe('EmcyAgent auth behavior', () => {
 
     expect(afterScopedClear).toBeUndefined();
 
-    const userBAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const userBAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'logout-session-b',
     });
@@ -644,8 +644,8 @@ describe('EmcyAgent auth behavior', () => {
 
     clearPersistedMcpAuth();
 
-    const postLogoutAgent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const postLogoutAgent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       authSessionKey: 'logout-session-b',
     });
@@ -710,8 +710,8 @@ describe('EmcyAgent auth behavior', () => {
       resolvedAuthConfig: authConfig,
     }));
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
       onAuthRequired,
     });
@@ -730,7 +730,7 @@ describe('EmcyAgent auth behavior', () => {
     expect(onAuthRequired).toHaveBeenCalledWith(MCP_SERVER_URL, expect.objectContaining({
       authType: 'oauth2',
       clientMode: 'manual',
-      callbackUrl: 'https://emcy.ai/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
     }));
     expect(events).toContain('connected');
     expect(agent.getMcpServers()).toEqual([{
@@ -742,8 +742,8 @@ describe('EmcyAgent auth behavior', () => {
   });
 
   it('exchanges the host app token for Gateway MCP auth when app-token auth is configured', async () => {
-    const gatewayMcpUrl = 'https://api.emcy.test/api/v1/gateway/gw_todo-local/mcp';
-    const exchangeUrl = 'https://api.emcy.test/api/v1/gateway/gw_todo-local/embedded/exchange';
+    const gatewayMcpUrl = 'https://api.mcpstack.test/api/v1/gateway/gw_todo-local/mcp';
+    const exchangeUrl = 'https://api.mcpstack.test/api/v1/gateway/gw_todo-local/embedded/exchange';
     const getToken = vi.fn(async () => 'host-app-access-token');
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
@@ -782,14 +782,14 @@ describe('EmcyAgent auth behavior', () => {
 
     const authConfig: McpServerAuthConfig = {
       authType: 'oauth2',
-      authorizationEndpoint: 'https://auth.emcy.test/oauth/authorize',
-      tokenEndpoint: 'https://auth.emcy.test/oauth/token',
-      registrationEndpoint: 'https://auth.emcy.test/connect/register',
+      authorizationEndpoint: 'https://auth.mcpstack.test/oauth/authorize',
+      tokenEndpoint: 'https://auth.mcpstack.test/oauth/token',
+      registrationEndpoint: 'https://auth.mcpstack.test/connect/register',
       resource: gatewayMcpUrl,
       scopes: ['checklists.read', 'checklists.write'],
     };
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'ag_todo_local',
       auth: {
         mode: 'app-token',
@@ -825,7 +825,7 @@ describe('EmcyAgent auth behavior', () => {
     ));
     expect(exchangeCall).toBeTruthy();
     expect(fetchMock).not.toHaveBeenCalledWith(
-      'https://auth.emcy.test/connect/register',
+      'https://auth.mcpstack.test/connect/register',
       expect.any(Object),
     );
     const exchangeInit = exchangeCall?.[1] as RequestInit;
@@ -833,7 +833,7 @@ describe('EmcyAgent auth behavior', () => {
     expect(exchangeInit.headers).toMatchObject({
       Authorization: 'Bearer host-app-access-token',
     });
-    expect(exchangeInit.headers).not.toHaveProperty('x-emcy-embedded-app-id');
+    expect(exchangeInit.headers).not.toHaveProperty('x-mcpstack-embedded-app-id');
     expect(JSON.parse(exchangeInit.body as string)).toEqual({
       agentId: 'ag_todo_local',
       resource: gatewayMcpUrl,
@@ -871,8 +871,8 @@ describe('EmcyAgent auth behavior', () => {
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
     };
 
-    const agent = new EmcyAgent({
-      apiKey: 'emcy-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
     });
 
