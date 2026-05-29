@@ -76,6 +76,8 @@ const DEFAULT_MCP_PROTOCOL_VERSION = '2025-11-25';
 const DEFAULT_LOCAL_PUBLIC_APP_PORT = '3100';
 const DEFAULT_OAUTH_CALLBACK_URL = 'https://emcy.ai/oauth/callback';
 const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://emcy.ai/.well-known/oauth-client-metadata.json';
+const APP_TOKEN_HEADER = 'X-Emcy-App-Token';
+const EMBEDDED_APP_ID_HEADER = 'X-Emcy-Embedded-App-Id';
 const DEFAULT_AUDIO_TURN_DETECTION: ResolvedAudioTurnDetectionConfig = {
   enabled: true,
   autoSubmit: true,
@@ -177,7 +179,7 @@ function createAppTokenAuthHandler(
       Authorization: `Bearer ${trimmedToken}`,
     };
     if (auth.appId?.trim()) {
-      headers['x-emcy-embedded-app-id'] = auth.appId.trim();
+      headers[EMBEDDED_APP_ID_HEADER] = auth.appId.trim();
     }
 
     const body: Record<string, unknown> = {
@@ -380,15 +382,43 @@ export class EmcyAgent {
     return this.config.apiKey;
   }
 
+  private async resolveAppToken(): Promise<string | undefined> {
+    if (this.config.auth?.mode !== 'app-token') {
+      return undefined;
+    }
+
+    const token = await this.config.auth.getToken();
+    const trimmed = token?.trim();
+    return trimmed || undefined;
+  }
+
+  private async resolveRuntimeHeaders(headers: Record<string, string> = {}): Promise<Record<string, string>> {
+    const token = await this.resolveAuthToken();
+    const runtimeHeaders: Record<string, string> = {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    };
+
+    const appToken = await this.resolveAppToken();
+    if (appToken) {
+      runtimeHeaders[APP_TOKEN_HEADER] = appToken;
+    }
+
+    const appId = this.config.auth?.mode === 'app-token' ? this.config.auth.appId?.trim() : undefined;
+    if (appId) {
+      runtimeHeaders[EMBEDDED_APP_ID_HEADER] = appId;
+    }
+
+    return runtimeHeaders;
+  }
+
   /** Initialize: fetch agent config (tools, widget settings, MCP servers) */
   async init(): Promise<AgentConfigResponse> {
-    const token = await this.resolveAuthToken();
+    const headers = await this.resolveRuntimeHeaders();
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/agents/${this.config.agentId}/config`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
       },
     );
 
@@ -690,15 +720,14 @@ export class EmcyAgent {
       throw new Error('No active conversation to rate.');
     }
 
-    const token = await this.resolveAuthToken();
+    const headers = await this.resolveRuntimeHeaders({
+      'Content-Type': 'application/json',
+    });
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/chat/conversations/${encodeURIComponent(this.conversationId)}/feedback`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(input),
       },
     );
@@ -751,7 +780,6 @@ export class EmcyAgent {
 
   /** Refresh the current SDK identity's budget snapshot from the API. */
   async refreshBudgetSnapshot(): Promise<AgentBudgetSnapshot | null> {
-    const token = await this.resolveAuthToken();
     const params = new URLSearchParams();
     const externalUserId = this.resolveExternalUserId();
     if (externalUserId) {
@@ -761,9 +789,7 @@ export class EmcyAgent {
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/agents/${this.config.agentId}/budget${query ? `?${query}` : ''}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: await this.resolveRuntimeHeaders(),
       },
     );
 
@@ -1003,16 +1029,15 @@ export class EmcyAgent {
   }
 
   private async createRealtimeTranscriptionSession(): Promise<RealtimeTranscriptionSessionResponse> {
-    const token = await this.resolveAuthToken();
     const externalUser = this.buildExternalUserContext();
+    const headers = await this.resolveRuntimeHeaders({
+      'Content-Type': 'application/json',
+    });
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/agents/${encodeURIComponent(this.config.agentId)}/realtime/transcription-sessions`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           conversationId: this.conversationId,
           externalUserId: this.resolveExternalUserId(),
@@ -2457,15 +2482,14 @@ export class EmcyAgent {
   }
 
   private async callChatApi(body: unknown, endpoint: string): Promise<Response> {
-    const token = await this.resolveAuthToken();
+    const headers = await this.resolveRuntimeHeaders({
+      'Content-Type': 'application/json',
+    });
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/${endpoint}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(body),
         signal: this.abortController?.signal,
       },
@@ -2483,7 +2507,6 @@ export class EmcyAgent {
     cursor?: string,
     pageSize = 50,
   ): Promise<ConversationMessagesPage> {
-    const token = await this.resolveAuthToken();
     const params = new URLSearchParams();
     params.set('pageSize', String(pageSize));
     if (cursor) {
@@ -2493,9 +2516,7 @@ export class EmcyAgent {
     const response = await fetch(
       `${this.config.agentServiceUrl}/api/v1/chat/conversations/${encodeURIComponent(conversationId)}/messages?${params.toString()}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: await this.resolveRuntimeHeaders(),
       },
     );
 
