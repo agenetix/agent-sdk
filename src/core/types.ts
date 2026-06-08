@@ -143,7 +143,7 @@ export interface McpStackAgentConfig {
 
   /**
    * Callback to get the auth token for MCP Stack API requests.
-   * If provided, called before each chat API request.
+   * If provided, called before each agent run request.
    * Use this when your session token may expire and needs refresh (e.g., dashboard playground).
    * If not provided, uses the static `apiKey` value.
    */
@@ -479,7 +479,7 @@ export interface WidgetConfig {
 }
 
 // ================================================================
-// SSE Events (from the chat API)
+// SSE Events (legacy chat API compatibility)
 // ================================================================
 
 export interface SseMessageStart {

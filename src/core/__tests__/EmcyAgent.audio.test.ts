@@ -29,7 +29,7 @@ describe('McpStackAgent audio input', () => {
   });
 
   it('reports unsupported browsers before creating a microphone session', async () => {
-    const fetchMock = vi.fn(async () => Response.json({
+    const fetchMock = vi.fn(async (_input?: RequestInfo | URL) => Response.json({
       agentId: 'agent_audio',
       name: 'Audio Agent',
       conversationResumeVersion: 'resume_v1',
