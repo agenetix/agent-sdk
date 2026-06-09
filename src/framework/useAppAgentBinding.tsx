@@ -113,10 +113,10 @@ export function useAppAgentBinding(
   useEffect(() => {
     controller.updateDynamicConfig({
       appContext: config.appContext,
-      clientTools: config.clientTools,
+      frontendTools: config.frontendTools,
       feedbackSource: config.feedbackSource,
     });
-  }, [config.appContext, config.clientTools, config.feedbackSource, controller]);
+  }, [config.appContext, config.frontendTools, config.feedbackSource, controller]);
 
   useEffect(() => {
     controller.setAuthRequiredHandler(auth.onAuthRequired ?? config.onAuthRequired);

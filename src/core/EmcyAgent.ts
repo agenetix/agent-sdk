@@ -13,8 +13,8 @@ import type {
   ChatMessage,
   ConversationFeedback,
   ConversationMessagesPage,
-  ClientToolsMap,
-  ClientToolParameter,
+  FrontendToolsMap,
+  FrontendToolParameter,
   McpStackAgentEvent,
   McpStackAgentEventMap,
   McpStackAgentConfig,
@@ -287,7 +287,7 @@ async function getResponseErrorMessage(response: Response): Promise<string> {
   return text.trim() || fallback;
 }
 
-function parameterToJsonSchema(parameter: ClientToolParameter): Record<string, unknown> {
+function parameterToJsonSchema(parameter: FrontendToolParameter): Record<string, unknown> {
   const schema: Record<string, unknown> = {
     type: parameter.type,
   };
@@ -329,8 +329,8 @@ function parameterToJsonSchema(parameter: ClientToolParameter): Record<string, u
   return schema;
 }
 
-/** Convert client tool parameters to JSON Schema for the API */
-function parametersToJsonSchema(params: Record<string, ClientToolParameter>): object {
+/** Convert frontend tool parameters to JSON Schema for the API */
+function parametersToJsonSchema(params: Record<string, FrontendToolParameter>): object {
   const properties: Record<string, object> = {};
   const required: string[] = [];
   for (const [key, p] of Object.entries(params)) {
@@ -346,7 +346,7 @@ function parametersToJsonSchema(params: Record<string, ClientToolParameter>): ob
  *
  * Handles:
  * - Communication with the MCP Stack AG-UI run endpoint (SSE streaming)
- * - AG-UI frontend tool execution via configured clientTools
+ * - AG-UI frontend tool execution via configured frontendTools
  * - MCP server auth/session helpers for legacy and explicit auth flows
  * - Conversation state management
  * - Event emission for UI updates
@@ -751,10 +751,10 @@ export class McpStackAgent {
     return (await response.json()) as ConversationFeedback;
   }
 
-  /** Convert client tools to the API schema format. */
-  private clientToolsToSchemas(): Array<{ name: string; description: string; inputSchema: object; selection?: unknown }> {
-    if (!this.config.clientTools) return [];
-    return Object.entries(this.config.clientTools).map(([name, def]) => ({
+  /** Convert frontend tools to the API schema format. */
+  private frontendToolsToSchemas(): Array<{ name: string; description: string; inputSchema: object; selection?: unknown }> {
+    if (!this.config.frontendTools) return [];
+    return Object.entries(this.config.frontendTools).map(([name, def]) => ({
       name,
       description: def.description,
       inputSchema: parametersToJsonSchema(def.parameters) as object,
@@ -762,9 +762,9 @@ export class McpStackAgent {
     }));
   }
 
-  private clientToolsToAgUiTools(): AgUiTool[] {
-    if (!this.config.clientTools) return [];
-    return Object.entries(this.config.clientTools).map(([name, def]) => {
+  private frontendToolsToAgUiTools(): AgUiTool[] {
+    if (!this.config.frontendTools) return [];
+    return Object.entries(this.config.frontendTools).map(([name, def]) => {
       const metadata: Record<string, unknown> = {};
       if (def.selection) {
         metadata.mcpstack = { selection: def.selection };
@@ -809,7 +809,7 @@ export class McpStackAgent {
       runId: `run_${crypto.randomUUID()}`,
       state: this.config.context ?? {},
       messages: [{ id: crypto.randomUUID(), role: 'user', content: message }],
-      tools: this.clientToolsToAgUiTools(),
+      tools: this.frontendToolsToAgUiTools(),
       context: this.buildAgUiContext(),
       forwardedProps: this.buildAgUiForwardedProps(),
     };
@@ -831,7 +831,7 @@ export class McpStackAgent {
         content,
         error,
       }],
-      tools: this.clientToolsToAgUiTools(),
+      tools: this.frontendToolsToAgUiTools(),
       context: this.buildAgUiContext(),
       forwardedProps: this.buildAgUiForwardedProps(),
     };
@@ -905,11 +905,11 @@ export class McpStackAgent {
     };
   }
 
-  /** Update the client tools exposed to the agent without recreating the session. */
-  setClientTools(clientTools: ClientToolsMap | undefined): void {
+  /** Update the frontend tools exposed to the agent without recreating the session. */
+  setFrontendTools(frontendTools: FrontendToolsMap | undefined): void {
     this.config = {
       ...this.config,
-      clientTools,
+      frontendTools,
     };
   }
 
@@ -2464,7 +2464,7 @@ export class McpStackAgent {
         const startTime = Date.now();
 
         try {
-          const toolResult = await this.executeClientTool(toolCall);
+          const toolResult = await this.executeFrontendTool(toolCall);
           const duration = Date.now() - startTime;
 
           this.recordToolResult(toolCall, toolResult, duration);
@@ -2503,10 +2503,10 @@ export class McpStackAgent {
     }
   }
 
-  private async executeClientTool(toolCall: SseToolCall): Promise<unknown> {
-    const def = this.config.clientTools?.[toolCall.toolName];
+  private async executeFrontendTool(toolCall: SseToolCall): Promise<unknown> {
+    const def = this.config.frontendTools?.[toolCall.toolName];
     if (!def) {
-      throw new Error(`Unknown client tool: ${toolCall.toolName}`);
+      throw new Error(`Unknown frontend tool: ${toolCall.toolName}`);
     }
     return def.execute(toolCall.arguments ?? {});
   }
@@ -3235,16 +3235,16 @@ export class McpStackAgent {
   // ================================================================
 
   private async executeTool(toolCall: SseToolCall): Promise<unknown> {
-    const isClientTool =
+    const isFrontendTool =
       toolCall.source === 'client' || !toolCall.mcpServerUrl;
 
-    if (isClientTool && this.config.clientTools) {
-      const def = this.config.clientTools[toolCall.toolName];
+    if (isFrontendTool && this.config.frontendTools) {
+      const def = this.config.frontendTools[toolCall.toolName];
       if (def) {
         const result = await def.execute(toolCall.arguments ?? {});
         return result;
       }
-      throw new Error(`Unknown client tool: ${toolCall.toolName}`);
+      throw new Error(`Unknown frontend tool: ${toolCall.toolName}`);
     }
 
     const mcpServerUrl = toolCall.mcpServerUrl || this.agentConfig?.mcpServerUrl;

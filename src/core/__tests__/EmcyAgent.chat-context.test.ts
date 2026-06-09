@@ -226,7 +226,7 @@ describe('McpStackAgent AG-UI chat context', () => {
       context: {
         hostRefreshInstruction: 'refresh after mutation',
       },
-      clientTools: {
+      frontendTools: {
         refreshChecklistWorkspace: {
           description: 'Refresh the current workspace.',
           parameters: {},
@@ -287,7 +287,7 @@ describe('McpStackAgent AG-UI chat context', () => {
     await agent.sendMessage('hello');
   });
 
-  it('uses updated client tools without recreating the agent', async () => {
+  it('uses updated frontend tools without recreating the agent', async () => {
     const originalTool = vi.fn(async () => ({ success: true, active: { id: 'old' } }));
     const updatedTool = vi.fn(async () => ({ success: true, active: { id: 'new' } }));
     let agUiCalls = 0;
@@ -334,7 +334,7 @@ describe('McpStackAgent AG-UI chat context', () => {
     const agent = new McpStackAgent({
       apiKey: 'mcpstack-test-key',
       agentId: AGENT_ID,
-      clientTools: {
+      frontendTools: {
         getActiveChecklistContext: {
           description: 'Get the current checklist context.',
           parameters: {},
@@ -344,7 +344,7 @@ describe('McpStackAgent AG-UI chat context', () => {
     });
 
     await agent.init();
-    agent.setClientTools({
+    agent.setFrontendTools({
       getActiveChecklistContext: {
         description: 'Get the current checklist context.',
         parameters: {},
@@ -357,7 +357,7 @@ describe('McpStackAgent AG-UI chat context', () => {
     expect(updatedTool).toHaveBeenCalledTimes(1);
   });
 
-  it('serializes clientTools as AG-UI frontend tools with selection metadata', async () => {
+  it('serializes frontendTools as AG-UI frontend tools with selection metadata', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
 
@@ -427,7 +427,7 @@ describe('McpStackAgent AG-UI chat context', () => {
     const agent = new McpStackAgent({
       apiKey: 'mcpstack-test-key',
       agentId: AGENT_ID,
-      clientTools: {
+      frontendTools: {
         highlightItems: {
           description: 'Highlight checklist items.',
           parameters: {

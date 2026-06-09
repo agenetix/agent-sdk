@@ -1,27 +1,27 @@
 // ================================================================
-// Client Tools (execute locally in browser, exposed to LLM)
+// Frontend Tools (execute locally in browser, exposed to LLM)
 // ================================================================
 
-export interface ClientToolParameter {
+export interface FrontendToolParameter {
   type: string;
   description?: string;
   required?: boolean;
   enum?: string[];
-  items?: ClientToolParameter;
-  properties?: Record<string, ClientToolParameter>;
-  additionalProperties?: boolean | ClientToolParameter;
+  items?: FrontendToolParameter;
+  properties?: Record<string, FrontendToolParameter>;
+  additionalProperties?: boolean | FrontendToolParameter;
 }
 
-export interface ClientToolDefinition {
+export interface FrontendToolDefinition {
   description: string;
-  parameters: Record<string, ClientToolParameter>;
-  selection?: ClientToolSelection;
+  parameters: Record<string, FrontendToolParameter>;
+  selection?: FrontendToolSelection;
   execute: (params: Record<string, unknown>) => Promise<unknown>;
 }
 
-export type ClientToolsMap = Record<string, ClientToolDefinition>;
+export type FrontendToolsMap = Record<string, FrontendToolDefinition>;
 
-export interface ClientToolSelection {
+export interface FrontendToolSelection {
   categories?: string[];
   alwaysInclude?: boolean;
   includeWhen?: string[];
@@ -209,10 +209,10 @@ export interface McpStackAgentConfig {
   conversationHistoryPageSize?: number;
 
   /**
-   * Client tools — execute locally in browser, exposed to LLM.
+   * Frontend tools — execute locally in browser, exposed to LLM.
    * The agent can call these to interact with the host app (e.g. fill forms, read page state).
    */
-  clientTools?: ClientToolsMap;
+  frontendTools?: FrontendToolsMap;
 
   /**
    * Optional persistent storage override used for MCP auth/session artifacts.
@@ -497,7 +497,7 @@ export interface SseToolCall {
   arguments: Record<string, unknown>;
   mcpServerUrl?: string;
   mcpServerName?: string;
-  /** When 'client', execute locally via clientTools; when 'mcp' or absent with mcpServerUrl, use MCP */
+  /** When 'client', execute locally via frontendTools; when 'mcp' or absent with mcpServerUrl, use MCP */
   source?: 'client' | 'mcp';
 }
 

@@ -103,7 +103,7 @@ export function CustomAssistant() {
       mode: "app-token",
       getToken: () => session.getAccessToken(),
     },
-    clientTools,
+    frontendTools,
     appContext,
   });
 
@@ -126,7 +126,7 @@ export function AssistantShell() {
       email: session.user.email,
       organizationId: session.organizationId,
     },
-    clientTools,
+    frontendTools,
     appContext,
     platform,
   });
@@ -219,7 +219,7 @@ capturing a token from the first render.
 
 The SDK forwards that app token with the AG-UI run. When the agent needs a server MCP tool, MCP Stack exchanges the app token at Gateway for an MCP-facing token without OAuth client registration. External MCP clients can still use the same Gateway-backed server through standard OAuth discovery, registration, and authorization.
 
-### `clientTools`
+### `frontendTools`
 
 App-owned functions the agent can call locally for UI work or host orchestration.
 
@@ -246,10 +246,9 @@ MCP Stack Server
 That means:
 
 - assistant text and tool progress stream as AG-UI events
-- `clientTools` map to AG-UI frontend tools
+- `frontendTools` are AG-UI frontend tools
 - server MCP tools execute server-side through Gateway/AuthGateway
 - budgets, logs, and permissions still apply to server-side work
-- existing `useAppAgent`, `createAppAgent`, and `McpStackChat` integrations do not need a major rewrite
 
 ## OAuth
 

@@ -37,7 +37,7 @@ export type {
   AppAgentPlatform,
   AppAgentSnapshotBase,
   AppAgentUserIdentity,
-  ClientToolsMap,
+  FrontendToolsMap,
   KeyValueStore,
   OAuthSessionRequest,
   OAuthSessionResult,

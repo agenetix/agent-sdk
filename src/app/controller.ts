@@ -265,7 +265,7 @@ export class AppAgentController {
       onAuthRequired,
       externalUserId: config.externalUserId ?? config.userIdentity?.subject ?? config.userIdentity?.email,
       context: config.appContext,
-      clientTools: this.buildClientTools(config.clientTools),
+      frontendTools: this.buildFrontendTools(config.frontendTools),
       conversationHistoryPageSize: config.conversation?.historyPageSize ?? 50,
       storage: config.storage,
     });
@@ -421,13 +421,13 @@ export class AppAgentController {
     this.listeners.clear();
   }
 
-  updateDynamicConfig(config: Pick<AppAgentConfig, 'appContext' | 'clientTools' | 'feedbackSource'>): void {
+  updateDynamicConfig(config: Pick<AppAgentConfig, 'appContext' | 'frontendTools' | 'feedbackSource'>): void {
     this.config = {
       ...this.config,
       ...config,
     };
     this.agent.setAppContext(this.config.appContext);
-    this.agent.setClientTools(this.buildClientTools(this.config.clientTools));
+    this.agent.setFrontendTools(this.buildFrontendTools(this.config.frontendTools));
   }
 
   setAuthRequiredHandler(
@@ -1029,7 +1029,7 @@ export class AppAgentController {
     }
   }
 
-  private buildClientTools(clientTools: AppAgentConfig['clientTools']) {
+  private buildFrontendTools(frontendTools: AppAgentConfig['frontendTools']) {
     const approvalAction = {
       description: 'Ask the host app to approve a multi-step plan before you continue.',
       selection: {
@@ -1068,10 +1068,10 @@ export class AppAgentController {
           this.approvalResolvers.set(approvalId, { resolve });
         });
       },
-    } satisfies NonNullable<AppAgentConfig['clientTools']>[string];
+    } satisfies NonNullable<AppAgentConfig['frontendTools']>[string];
 
     return {
-      ...(clientTools ?? {}),
+      ...(frontendTools ?? {}),
       [APP_AGENT_APPROVAL_ACTION]: {
         ...approvalAction,
       },
