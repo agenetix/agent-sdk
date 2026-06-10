@@ -1,11 +1,11 @@
 {
   "name": "@mcpstack/agent-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "Embeddable MCP Stack chat widget powered by MCP. Add an LLM-powered agent to your web app.",
+  "description": "First-party AG-UI client for MCP Stack Agents. Add an LLM-powered agent to your web app while server tools stay on MCP.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -92,5 +92,8 @@
     "url": "https://github.com/emcy-ai/mcpstack-agent-sdk/issues"
   },
   "author": "MCP Stack <hello@mcpstack.com>",
-  "homepage": "https://mcpstack.com"
+  "homepage": "https://mcpstack.com",
+  "dependencies": {
+    "@ag-ui/core": "^0.0.55"
+  }
 }

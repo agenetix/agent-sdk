@@ -1,5 +1,10 @@
 import { parseSseStream } from './sse-client';
 import type {
+  Message as AgUiMessage,
+  RunAgentInput as AgUiRunInput,
+  Tool as AgUiTool,
+} from '@ag-ui/core';
+import type {
   AgentConfigResponse,
   AgentBudgetSnapshot,
   AudioInputState,
@@ -8,8 +13,8 @@ import type {
   ChatMessage,
   ConversationFeedback,
   ConversationMessagesPage,
-  ClientToolsMap,
-  ClientToolParameter,
+  FrontendToolsMap,
+  FrontendToolParameter,
   McpStackAgentEvent,
   McpStackAgentEventMap,
   McpStackAgentConfig,
@@ -71,6 +76,41 @@ type AudioTurnState = {
   autoCommitted: boolean;
   lastActivityEmitMs: number;
 };
+
+type AgUiEvent = Record<string, unknown> & {
+  type: string;
+  timestamp?: number;
+};
+
+type AgUiToolCallState = {
+  toolCallId: string;
+  toolName: string;
+  toolLabel?: string;
+  mcpServerName?: string;
+  source?: 'client' | 'mcp';
+  argumentsJson: string;
+  startedAt: number;
+};
+
+type AgUiProcessResult =
+  | { type: 'done' }
+  | { type: 'frontend_tool'; data: SseToolCall }
+  | { type: 'error'; data?: unknown };
+
+const AG_UI_EVENT = {
+  RUN_STARTED: 'RUN_STARTED',
+  RUN_FINISHED: 'RUN_FINISHED',
+  RUN_ERROR: 'RUN_ERROR',
+  TEXT_MESSAGE_START: 'TEXT_MESSAGE_START',
+  TEXT_MESSAGE_CONTENT: 'TEXT_MESSAGE_CONTENT',
+  TEXT_MESSAGE_END: 'TEXT_MESSAGE_END',
+  TOOL_CALL_START: 'TOOL_CALL_START',
+  TOOL_CALL_ARGS: 'TOOL_CALL_ARGS',
+  TOOL_CALL_END: 'TOOL_CALL_END',
+  TOOL_CALL_RESULT: 'TOOL_CALL_RESULT',
+  STATE_SNAPSHOT: 'STATE_SNAPSHOT',
+  CUSTOM: 'CUSTOM',
+} as const;
 
 const DEFAULT_MCP_PROTOCOL_VERSION = '2025-11-25';
 const DEFAULT_LOCAL_PUBLIC_APP_PORT = '3100';
@@ -247,7 +287,7 @@ async function getResponseErrorMessage(response: Response): Promise<string> {
   return text.trim() || fallback;
 }
 
-function parameterToJsonSchema(parameter: ClientToolParameter): Record<string, unknown> {
+function parameterToJsonSchema(parameter: FrontendToolParameter): Record<string, unknown> {
   const schema: Record<string, unknown> = {
     type: parameter.type,
   };
@@ -289,8 +329,8 @@ function parameterToJsonSchema(parameter: ClientToolParameter): Record<string, u
   return schema;
 }
 
-/** Convert client tool parameters to JSON Schema for the API */
-function parametersToJsonSchema(params: Record<string, ClientToolParameter>): object {
+/** Convert frontend tool parameters to JSON Schema for the API */
+function parametersToJsonSchema(params: Record<string, FrontendToolParameter>): object {
   const properties: Record<string, object> = {};
   const required: string[] = [];
   for (const [key, p] of Object.entries(params)) {
@@ -305,8 +345,9 @@ function parametersToJsonSchema(params: Record<string, ClientToolParameter>): ob
  * Framework-agnostic — works in any JavaScript environment.
  *
  * Handles:
- * - Communication with the MCP Stack chat API (SSE streaming)
- * - Tool execution via MCP server (browser-side, with user's auth token)
+ * - Communication with the MCP Stack AG-UI run endpoint (SSE streaming)
+ * - AG-UI frontend tool execution via configured frontendTools
+ * - MCP server auth/session helpers for legacy and explicit auth flows
  * - Conversation state management
  * - Event emission for UI updates
  */
@@ -710,15 +751,90 @@ export class McpStackAgent {
     return (await response.json()) as ConversationFeedback;
   }
 
-  /** Convert client tools to the API schema format. */
-  private clientToolsToSchemas(): Array<{ name: string; description: string; inputSchema: object; selection?: unknown }> {
-    if (!this.config.clientTools) return [];
-    return Object.entries(this.config.clientTools).map(([name, def]) => ({
+  /** Convert frontend tools to the API schema format. */
+  private frontendToolsToSchemas(): Array<{ name: string; description: string; inputSchema: object; selection?: unknown }> {
+    if (!this.config.frontendTools) return [];
+    return Object.entries(this.config.frontendTools).map(([name, def]) => ({
       name,
       description: def.description,
       inputSchema: parametersToJsonSchema(def.parameters) as object,
       selection: def.selection,
     }));
+  }
+
+  private frontendToolsToAgUiTools(): AgUiTool[] {
+    if (!this.config.frontendTools) return [];
+    return Object.entries(this.config.frontendTools).map(([name, def]) => {
+      const metadata: Record<string, unknown> = {};
+      if (def.selection) {
+        metadata.mcpstack = { selection: def.selection };
+        metadata['x-mcpstack-selection'] = def.selection;
+      }
+
+      return {
+        name,
+        description: def.description,
+        parameters: parametersToJsonSchema(def.parameters) as object,
+        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      };
+    });
+  }
+
+  private buildAgUiContext(): Array<{ description: string; value: string }> {
+    if (!this.config.context) return [];
+    return Object.entries(this.config.context)
+      .filter(([, value]) => value != null)
+      .map(([key, value]) => ({
+        description: key,
+        value: typeof value === 'string' ? value : JSON.stringify(value),
+      }));
+  }
+
+  private buildAgUiForwardedProps(): AgUiRunInput['forwardedProps'] {
+    const externalUser = this.buildExternalUserContext();
+    const mcpstack: AgUiRunInput['forwardedProps']['mcpstack'] = {
+      conversationId: this.conversationId ?? undefined,
+      externalUserId: this.resolveExternalUserId(),
+      context: this.config.context,
+    };
+    if (externalUser) {
+      mcpstack.externalUser = externalUser;
+    }
+    return { mcpstack };
+  }
+
+  private buildAgUiUserRunInput(message: string): AgUiRunInput {
+    return {
+      threadId: this.conversationId ?? `thread_${crypto.randomUUID()}`,
+      runId: `run_${crypto.randomUUID()}`,
+      state: this.config.context ?? {},
+      messages: [{ id: crypto.randomUUID(), role: 'user', content: message }],
+      tools: this.frontendToolsToAgUiTools(),
+      context: this.buildAgUiContext(),
+      forwardedProps: this.buildAgUiForwardedProps(),
+    };
+  }
+
+  private buildAgUiToolResultRunInput(
+    toolCall: SseToolCall,
+    content: string,
+    error?: string,
+  ): AgUiRunInput {
+    return {
+      threadId: this.conversationId ?? `thread_${crypto.randomUUID()}`,
+      runId: `run_${crypto.randomUUID()}`,
+      state: this.config.context ?? {},
+      messages: [{
+        id: crypto.randomUUID(),
+        role: 'tool',
+        toolCallId: toolCall.toolCallId,
+        content,
+        error,
+      }],
+      tools: this.frontendToolsToAgUiTools(),
+      context: this.buildAgUiContext(),
+      forwardedProps: this.buildAgUiForwardedProps(),
+    };
   }
 
   private resolveExternalUserId(): string | undefined {
@@ -789,11 +905,11 @@ export class McpStackAgent {
     };
   }
 
-  /** Update the client tools exposed to the agent without recreating the session. */
-  setClientTools(clientTools: ClientToolsMap | undefined): void {
+  /** Update the frontend tools exposed to the agent without recreating the session. */
+  setFrontendTools(frontendTools: FrontendToolsMap | undefined): void {
     this.config = {
       ...this.config,
-      clientTools,
+      frontendTools,
     };
   }
 
@@ -2325,124 +2441,55 @@ export class McpStackAgent {
 
   /**
    * The core orchestration loop:
-   * 1. Send message to chat API
-   * 2. Stream response
-   * 3. If tool_call → execute tool via MCP → send result → continue
-   * 4. If message_end → done
+   * 1. Send message to the AG-UI run endpoint
+   * 2. Stream assistant text, server MCP tool progress, and frontend tool requests
+   * 3. If an AG-UI frontend tool is requested, execute the matching clientTool locally
+   * 4. Send the frontend tool result back as an AG-UI tool message and continue
    */
   private async runChatLoop(message: string): Promise<void> {
     this.abortController = new AbortController();
     this.emit('thinking', true);
 
-    const chatBody: Record<string, unknown> = {
-      agentId: this.config.agentId,
-      conversationId: this.conversationId,
-      message,
-      externalUserId: this.resolveExternalUserId(),
-      context: this.config.context,
-    };
-    const externalUser = this.buildExternalUserContext();
-    if (externalUser) {
-      chatBody.externalUser = externalUser;
-    }
-    const clientToolSchemas = this.clientToolsToSchemas();
-    if (clientToolSchemas.length > 0) {
-      chatBody.clientTools = clientToolSchemas;
-    }
-    let response = await this.callChatApi(chatBody, 'chat');
+    let response = await this.callAgUiApi(this.buildAgUiUserRunInput(message));
 
     while (true) {
-      const result = await this.processSseStream(response);
+      const result = await this.processAgUiStream(response);
 
-      if (result.type === 'message_end') {
+      if (result.type === 'done') {
         break;
       }
 
-      if (result.type === 'tool_call') {
+      if (result.type === 'frontend_tool') {
         const toolCall = result.data as SseToolCall;
         const startTime = Date.now();
 
         try {
-          const toolResult = await this.executeTool(toolCall);
+          const toolResult = await this.executeFrontendTool(toolCall);
           const duration = Date.now() - startTime;
 
-          const toolCallMsg = this.messages.find(
-            m => m.role === 'tool_call' && m.toolCallId === toolCall.toolCallId
-          );
-          if (toolCallMsg) {
-            toolCallMsg.toolCallStatus = 'completed';
-            toolCallMsg.toolCallDuration = duration;
-            toolCallMsg.toolResult = typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult);
-          }
-
-          this.emit('tool_result', { toolCallId: toolCall.toolCallId, result: toolResult, duration });
-
-          const toolResultMsg: ChatMessage = {
-            id: crypto.randomUUID(),
-            role: 'tool_result',
-            content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult),
-            toolCallId: toolCall.toolCallId,
-            toolName: toolCall.toolName,
-            timestamp: new Date(),
-          };
-          this.messages.push(toolResultMsg);
+          this.recordToolResult(toolCall, toolResult, duration);
 
           this.emit('thinking', true);
 
-          const toolResultBody: Record<string, unknown> = {
-            conversationId: this.conversationId!,
-            toolCallId: toolCall.toolCallId,
-            result: toolResult,
-            durationMs: duration,
-            context: this.config.context,
-          };
-          const clientToolSchemas = this.clientToolsToSchemas();
-          if (clientToolSchemas.length > 0) {
-            toolResultBody.clientTools = clientToolSchemas;
-          }
-          response = await this.callChatApi(toolResultBody, 'chat/tool-result');
+          response = await this.callAgUiApi(this.buildAgUiToolResultRunInput(
+            toolCall,
+            this.serializeToolContent(toolResult),
+          ));
         } catch (err) {
           const duration = Date.now() - startTime;
           const errorMsg = err instanceof Error ? err.message : 'Tool execution failed';
 
-          const toolCallMsg = this.messages.find(
-            m => m.role === 'tool_call' && m.toolCallId === toolCall.toolCallId
-          );
-          if (toolCallMsg) {
-            toolCallMsg.toolCallStatus = 'error';
-            toolCallMsg.toolCallDuration = duration;
-            toolCallMsg.toolError = errorMsg;
-          }
-
-          this.emit('tool_error', { toolCallId: toolCall.toolCallId, error: errorMsg, duration });
-
           const errorResult = `Error: ${errorMsg}`;
-          const toolResultMsg: ChatMessage = {
-            id: crypto.randomUUID(),
-            role: 'tool_result',
-            content: errorResult,
-            toolCallId: toolCall.toolCallId,
-            toolName: toolCall.toolName,
-            timestamp: new Date(),
-          };
-          this.messages.push(toolResultMsg);
+          this.recordToolError(toolCall, errorMsg, errorResult, duration);
 
           this.emit('thinking', true);
 
           try {
-            const toolResultBody: Record<string, unknown> = {
-              conversationId: this.conversationId!,
-              toolCallId: toolCall.toolCallId,
-              result: errorResult,
-              isError: true,
-              durationMs: duration,
-              context: this.config.context,
-            };
-            const clientToolSchemas = this.clientToolsToSchemas();
-            if (clientToolSchemas.length > 0) {
-              toolResultBody.clientTools = clientToolSchemas;
-            }
-            response = await this.callChatApi(toolResultBody, 'chat/tool-result');
+            response = await this.callAgUiApi(this.buildAgUiToolResultRunInput(
+              toolCall,
+              errorResult,
+              errorMsg,
+            ));
           } catch {
             this.emit('error', { code: 'tool_error', message: errorMsg });
             break;
@@ -2456,17 +2503,38 @@ export class McpStackAgent {
     }
   }
 
-  private async callChatApi(body: unknown, endpoint: string): Promise<Response> {
+  private async executeFrontendTool(toolCall: SseToolCall): Promise<unknown> {
+    const def = this.config.frontendTools?.[toolCall.toolName];
+    if (!def) {
+      throw new Error(`Unknown frontend tool: ${toolCall.toolName}`);
+    }
+    return def.execute(toolCall.arguments ?? {});
+  }
+
+  private async callAgUiApi(input: AgUiRunInput): Promise<Response> {
     const token = await this.resolveAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      Authorization: `Bearer ${token}`,
+    };
+
+    if (this.config.auth?.mode === 'app-token') {
+      const appToken = await this.config.auth.getToken();
+      if (appToken?.trim()) {
+        headers['X-MCPStack-App-Token'] = appToken.trim();
+      }
+      if (this.config.auth.appId?.trim()) {
+        headers['X-MCPStack-Embedded-App-Id'] = this.config.auth.appId.trim();
+      }
+    }
+
     const response = await fetch(
-      `${this.config.agentServiceUrl}/api/v1/${endpoint}`,
+      `${this.config.agentServiceUrl}/api/v1/agents/${encodeURIComponent(this.config.agentId)}/ag-ui`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
+        headers,
+        body: JSON.stringify(input),
         signal: this.abortController?.signal,
       },
     );
@@ -2476,6 +2544,330 @@ export class McpStackAgent {
     }
 
     return response;
+  }
+
+  private async processAgUiStream(response: Response): Promise<AgUiProcessResult> {
+    let assistantContent = '';
+    let emittedThinkingFalse = false;
+    let pendingFrontendTool: SseToolCall | null = null;
+    const toolCalls = new Map<string, AgUiToolCallState>();
+
+    const stopThinking = () => {
+      if (!emittedThinkingFalse) {
+        this.emit('thinking', false);
+        emittedThinkingFalse = true;
+      }
+    };
+
+    const flushAssistantMessage = () => {
+      if (!assistantContent) {
+        return;
+      }
+
+      const assistantMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: assistantContent,
+        timestamp: new Date(),
+      };
+      this.messages.push(assistantMsg);
+      this.emit('message', assistantMsg);
+      assistantContent = '';
+    };
+
+    for await (const event of parseSseStream(response, this.abortController?.signal)) {
+      const data = event.data as AgUiEvent;
+
+      switch (event.type) {
+        case AG_UI_EVENT.RUN_STARTED: {
+          const threadId = this.getStringField(data, 'threadId');
+          if (threadId) {
+            this.conversationId = threadId;
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.STATE_SNAPSHOT: {
+          const snapshot = this.getRecordField(data, 'snapshot');
+          const conversationId = snapshot ? this.getStringField(snapshot, 'conversationId') : undefined;
+          if (conversationId) {
+            this.conversationId = conversationId;
+          }
+
+          const budget = snapshot?.budget;
+          if (budget && typeof budget === 'object') {
+            this.budgetSnapshot = budget as AgentBudgetSnapshot;
+            this.emit('budget_snapshot', this.budgetSnapshot);
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.TEXT_MESSAGE_CONTENT: {
+          stopThinking();
+          const delta = this.getStringField(data, 'delta') ?? '';
+          assistantContent += delta;
+          this.emit('content_delta', { text: delta });
+          break;
+        }
+
+        case AG_UI_EVENT.TOOL_CALL_START: {
+          stopThinking();
+          const toolCallId = this.getStringField(data, 'toolCallId');
+          const toolName = this.getStringField(data, 'toolCallName');
+          if (!toolCallId || !toolName) {
+            break;
+          }
+
+          const mcpstack = this.getRecordField(data, 'mcpstack');
+          const sourceValue = mcpstack ? this.getStringField(mcpstack, 'source') : undefined;
+          const source = sourceValue === 'mcp' ? 'mcp' : sourceValue === 'client' ? 'client' : undefined;
+
+          toolCalls.set(toolCallId, {
+            toolCallId,
+            toolName,
+            toolLabel: mcpstack ? this.getStringField(mcpstack, 'label') : undefined,
+            mcpServerName: mcpstack ? this.getStringField(mcpstack, 'mcpServerName') : undefined,
+            source,
+            argumentsJson: '',
+            startedAt: Date.now(),
+          });
+          break;
+        }
+
+        case AG_UI_EVENT.TOOL_CALL_ARGS: {
+          const toolCallId = this.getStringField(data, 'toolCallId');
+          const state = toolCallId ? toolCalls.get(toolCallId) : undefined;
+          if (state) {
+            state.argumentsJson += this.getStringField(data, 'delta') ?? '';
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.TOOL_CALL_END: {
+          const toolCallId = this.getStringField(data, 'toolCallId');
+          const state = toolCallId ? toolCalls.get(toolCallId) : undefined;
+          if (!state) {
+            break;
+          }
+
+          flushAssistantMessage();
+          const toolCall: SseToolCall = {
+            toolCallId: state.toolCallId,
+            toolName: state.toolName,
+            toolLabel: state.toolLabel,
+            mcpServerName: state.mcpServerName,
+            source: state.source,
+            arguments: this.parseToolArguments(state.argumentsJson),
+          };
+
+          const toolCallMsg: ChatMessage = {
+            id: crypto.randomUUID(),
+            role: 'tool_call',
+            content: `Calling ${toolCall.toolLabel ?? toolCall.toolName}...`,
+            toolName: toolCall.toolName,
+            toolLabel: toolCall.toolLabel,
+            toolCallId: toolCall.toolCallId,
+            timestamp: new Date(),
+            toolCallStatus: 'calling',
+            toolCallStartTime: state.startedAt,
+          };
+          this.messages.push(toolCallMsg);
+          this.emit('tool_call', toolCall);
+
+          if (state.source !== 'mcp') {
+            pendingFrontendTool = toolCall;
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.TOOL_CALL_RESULT: {
+          const toolCallId = this.getStringField(data, 'toolCallId');
+          const state = toolCallId ? toolCalls.get(toolCallId) : undefined;
+          if (!toolCallId) {
+            break;
+          }
+
+          const content = this.getStringField(data, 'content') ?? '';
+          const toolCall: SseToolCall = {
+            toolCallId,
+            toolName: state?.toolName ?? this.getStringField(data, 'toolCallName') ?? toolCallId,
+            toolLabel: state?.toolLabel,
+            mcpServerName: state?.mcpServerName,
+            source: state?.source,
+            arguments: state ? this.parseToolArguments(state.argumentsJson) : {},
+          };
+          const duration = state ? Date.now() - state.startedAt : 0;
+          this.recordToolResult(toolCall, this.parseToolContent(content), duration);
+          if (pendingFrontendTool?.toolCallId === toolCallId) {
+            pendingFrontendTool = null;
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.CUSTOM: {
+          const name = this.getStringField(data, 'name');
+          if (name === 'mcpstack.budget_snapshot') {
+            const value = data.value;
+            if (value && typeof value === 'object') {
+              this.budgetSnapshot = value as AgentBudgetSnapshot;
+              this.emit('budget_snapshot', this.budgetSnapshot);
+            }
+          }
+          break;
+        }
+
+        case AG_UI_EVENT.RUN_FINISHED: {
+          const result = this.getRecordField(data, 'result');
+          const conversationId = result ? this.getStringField(result, 'conversationId') : undefined;
+          if (conversationId) {
+            this.conversationId = conversationId;
+          }
+
+          if (pendingFrontendTool) {
+            return { type: 'frontend_tool', data: pendingFrontendTool };
+          }
+
+          flushAssistantMessage();
+          const messageEnd: SseMessageEnd = {
+            inputTokens: this.getNumberField(result, 'inputTokens') ?? 0,
+            outputTokens: this.getNumberField(result, 'outputTokens') ?? 0,
+            toolCalls: this.getNumberField(result, 'toolCalls') ?? toolCalls.size,
+          };
+          this.emit('message_end', messageEnd);
+          return { type: 'done' };
+        }
+
+        case AG_UI_EVENT.RUN_ERROR: {
+          const error: SseError = {
+            code: this.getStringField(data, 'code') ?? 'run_error',
+            message: this.getStringField(data, 'message') ?? 'Agent run failed.',
+          };
+          const errorMsg: ChatMessage = {
+            id: crypto.randomUUID(),
+            role: 'error',
+            content: error.message,
+            timestamp: new Date(),
+            errorCode: error.code,
+          };
+          this.messages.push(errorMsg);
+          this.emit('message', errorMsg);
+          this.emit('error', error);
+          return { type: 'error', data: error };
+        }
+      }
+    }
+
+    flushAssistantMessage();
+    const messageEnd: SseMessageEnd = {
+      inputTokens: 0,
+      outputTokens: 0,
+      toolCalls: toolCalls.size,
+    };
+    this.emit('message_end', messageEnd);
+    return { type: 'done' };
+  }
+
+  private recordToolResult(toolCall: SseToolCall, result: unknown, duration: number): void {
+    const toolCallMsg = this.messages.find(
+      m => m.role === 'tool_call' && m.toolCallId === toolCall.toolCallId
+    );
+    if (toolCallMsg) {
+      toolCallMsg.toolCallStatus = 'completed';
+      toolCallMsg.toolCallDuration = duration;
+      toolCallMsg.toolResult = this.serializeToolContent(result);
+    }
+
+    this.emit('tool_result', { toolCallId: toolCall.toolCallId, result, duration });
+
+    const toolResultMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'tool_result',
+      content: this.serializeToolContent(result),
+      toolCallId: toolCall.toolCallId,
+      toolName: toolCall.toolName,
+      timestamp: new Date(),
+    };
+    this.messages.push(toolResultMsg);
+  }
+
+  private recordToolError(
+    toolCall: SseToolCall,
+    error: string,
+    resultContent: string,
+    duration: number,
+  ): void {
+    const toolCallMsg = this.messages.find(
+      m => m.role === 'tool_call' && m.toolCallId === toolCall.toolCallId
+    );
+    if (toolCallMsg) {
+      toolCallMsg.toolCallStatus = 'error';
+      toolCallMsg.toolCallDuration = duration;
+      toolCallMsg.toolError = error;
+    }
+
+    this.emit('tool_error', { toolCallId: toolCall.toolCallId, error, duration });
+
+    const toolResultMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'tool_result',
+      content: resultContent,
+      toolCallId: toolCall.toolCallId,
+      toolName: toolCall.toolName,
+      timestamp: new Date(),
+    };
+    this.messages.push(toolResultMsg);
+  }
+
+  private serializeToolContent(result: unknown): string {
+    if (result == null) {
+      return '';
+    }
+
+    return typeof result === 'string' ? result : JSON.stringify(result);
+  }
+
+  private parseToolContent(content: string): unknown {
+    if (!content) {
+      return '';
+    }
+
+    try {
+      return JSON.parse(content);
+    } catch {
+      return content;
+    }
+  }
+
+  private parseToolArguments(argumentsJson: string): Record<string, unknown> {
+    if (!argumentsJson.trim()) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(argumentsJson);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private getRecordField(record: Record<string, unknown> | null | undefined, key: string): Record<string, unknown> | undefined {
+    const value = record?.[key];
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : undefined;
+  }
+
+  private getStringField(record: Record<string, unknown> | null | undefined, key: string): string | undefined {
+    const value = record?.[key];
+    return typeof value === 'string' && value ? value : undefined;
+  }
+
+  private getNumberField(record: Record<string, unknown> | null | undefined, key: string): number | undefined {
+    const value = record?.[key];
+    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
   }
 
   private async fetchConversationMessages(
@@ -2543,7 +2935,7 @@ export class McpStackAgent {
   }
 
   /**
-   * Process an SSE stream from the chat API.
+   * Process a legacy chat SSE stream.
    * Returns when the stream ends (either message_end or tool_call).
    */
   private async processSseStream(
@@ -2843,16 +3235,16 @@ export class McpStackAgent {
   // ================================================================
 
   private async executeTool(toolCall: SseToolCall): Promise<unknown> {
-    const isClientTool =
+    const isFrontendTool =
       toolCall.source === 'client' || !toolCall.mcpServerUrl;
 
-    if (isClientTool && this.config.clientTools) {
-      const def = this.config.clientTools[toolCall.toolName];
+    if (isFrontendTool && this.config.frontendTools) {
+      const def = this.config.frontendTools[toolCall.toolName];
       if (def) {
         const result = await def.execute(toolCall.arguments ?? {});
         return result;
       }
-      throw new Error(`Unknown client tool: ${toolCall.toolName}`);
+      throw new Error(`Unknown frontend tool: ${toolCall.toolName}`);
     }
 
     const mcpServerUrl = toolCall.mcpServerUrl || this.agentConfig?.mcpServerUrl;

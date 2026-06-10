@@ -2,7 +2,9 @@
 
 Use MCP Stack agents in your app.
 
-This package now has one public model for custom product integrations: `App Agent`.
+AgentSDK is MCP Stack's first-party AG-UI client. Your app talks AG-UI to the agent; MCP Stack keeps server tools on MCP through Gateway, AuthGateway, budgets, logs, and permissions.
+
+This package has one public model for custom product integrations: `App Agent`.
 
 ## Install
 
@@ -62,21 +64,21 @@ export function App() {
   return (
     <div style={{ height: 640 }}>
       <McpStackChat
-        apiKey="mcpstack_sk_xxxx"
+        apiKey="mcpstack_pk_xxxx"
         agentId="ag_xxxxx"
         appSessionKey={session.id}
-    userIdentity={{
-      subject: session.user.id,
-      email: session.user.email,
-      organizationId: session.organizationId,
-    }}
-    auth={{
-      mode: "app-token",
-      getToken: () => session.getAccessToken(),
-    }}
-    mode="inline"
-    title="Support Agent"
-  />
+        userIdentity={{
+          subject: session.user.id,
+          email: session.user.email,
+          organizationId: session.organizationId,
+        }}
+        auth={{
+          mode: "app-token",
+          getToken: () => session.getAccessToken(),
+        }}
+        mode="inline"
+        title="Support Agent"
+      />
     </div>
   );
 }
@@ -89,7 +91,7 @@ import { useAppAgent } from "@mcpstack/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_sk_xxxx",
+    apiKey: "mcpstack_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -101,7 +103,7 @@ export function CustomAssistant() {
       mode: "app-token",
       getToken: () => session.getAccessToken(),
     },
-    clientTools,
+    frontendTools,
     appContext,
   });
 
@@ -116,7 +118,7 @@ import { useAppAgent } from "@mcpstack/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_sk_xxxx",
+    apiKey: "mcpstack_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -124,7 +126,7 @@ export function AssistantShell() {
       email: session.user.email,
       organizationId: session.organizationId,
     },
-    clientTools,
+    frontendTools,
     appContext,
     platform,
   });
@@ -140,7 +142,7 @@ export function AssistantShell() {
 import { McpStackAgent } from "@mcpstack/agent-sdk";
 
 const agent = new McpStackAgent({
-  apiKey: "mcpstack_sk_xxxx",
+  apiKey: "mcpstack_pk_xxxx",
   agentId: "ag_xxxxx",
   authSessionKey: session.id,
 });
@@ -158,7 +160,7 @@ Apps can tune the behavior without implementing their own VAD:
 
 ```ts
 const agent = new McpStackAgent({
-  apiKey: "mcpstack_sk_xxxx",
+  apiKey: "mcpstack_pk_xxxx",
   agentId: "ag_xxxxx",
   audioInput: {
     turnDetection: {
@@ -175,7 +177,7 @@ const agent = new McpStackAgent({
 
 ### `apiKey`
 
-Your MCP Stack API key.
+Your MCP Stack public agent key, usually an `mcpstack_pk_*` embed key scoped to the agent and allowed browser origins.
 
 ### `agentId`
 
@@ -215,18 +217,38 @@ auth: {
 auth library refreshes tokens, read from that current session source rather than
 capturing a token from the first render.
 
-The SDK exchanges that app token at Gateway for an MCP-facing token without
-OAuth client registration. External MCP clients can still use the same
-Gateway-backed server through standard OAuth discovery, registration, and
-authorization.
+The SDK forwards that app token with the AG-UI run. When the agent needs a server MCP tool, MCP Stack exchanges the app token at Gateway for an MCP-facing token without OAuth client registration. External MCP clients can still use the same Gateway-backed server through standard OAuth discovery, registration, and authorization.
 
-### `clientTools`
+### `frontendTools`
 
 App-owned functions the agent can call locally for UI work or host orchestration.
+
+AgentSDK sends these as AG-UI frontend tool schemas. They run in your app and should stay focused on route changes, current-screen reads, drafting, filtering, approvals, and other local UI work. Use server MCP tools for authoritative backend reads and writes.
 
 ### `appContext`
 
 Extra host context or policy instructions for the agent.
+
+## Protocol boundary
+
+AgentSDK uses AG-UI for agent turns:
+
+```text
+AgentSDK / custom AG-UI frontend
+        -> AG-UI
+MCP Stack Agent
+        -> MCP
+MCP Stack Server
+        -> Gateway / AuthGateway
+        -> SaaS API
+```
+
+That means:
+
+- assistant text and tool progress stream as AG-UI events
+- `frontendTools` are AG-UI frontend tools
+- server MCP tools execute server-side through Gateway/AuthGateway
+- budgets, logs, and permissions still apply to server-side work
 
 ## OAuth
 

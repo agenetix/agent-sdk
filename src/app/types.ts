@@ -3,7 +3,7 @@ import type {
   AgentConfigResponse,
   AudioInputState,
   ChatMessage,
-  ClientToolsMap as RuntimeClientToolsMap,
+  FrontendToolsMap as RuntimeFrontendToolsMap,
   ConversationFeedback,
   ConversationFeedbackSentiment,
   McpStackAppTokenAuthConfig,
@@ -14,7 +14,7 @@ import type {
   SseError,
 } from '../core/types';
 
-export type ClientToolsMap = RuntimeClientToolsMap;
+export type FrontendToolsMap = RuntimeFrontendToolsMap;
 export type AppAgentUserIdentity = McpStackEmbeddedAuthIdentity;
 
 export interface KeyValueStore {
@@ -125,7 +125,7 @@ export interface AppAgentConfig {
   useCookies?: boolean;
   externalUserId?: string;
   appContext?: Record<string, unknown>;
-  clientTools?: ClientToolsMap;
+  frontendTools?: FrontendToolsMap;
   platform?: AppAgentPlatform;
   onAuthRequired?: (mcpServerUrl: string, authConfig: McpServerAuthConfig) => Promise<OAuthTokenResponse | undefined>;
   conversation?: {

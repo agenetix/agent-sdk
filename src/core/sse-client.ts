@@ -1,5 +1,5 @@
 /**
- * Parses an SSE stream from the MCP Stack chat API.
+ * Parses SSE streams from MCP Stack agent endpoints.
  * Yields parsed events as they arrive.
  */
 export interface ParsedSseEvent {
@@ -27,13 +27,16 @@ function* parseEventBlocks(input: string): Generator<ParsedSseEvent> {
       }
     }
 
-    if (!eventType || dataLines.length === 0) {
+    if (dataLines.length === 0) {
       continue;
     }
 
     try {
       const parsed = JSON.parse(dataLines.join('\n'));
-      yield { type: eventType, data: parsed };
+      const parsedType = typeof parsed?.type === 'string' ? parsed.type : '';
+      const resolvedType = eventType || parsedType;
+      if (!resolvedType) continue;
+      yield { type: resolvedType, data: parsed };
     } catch {
       // Skip malformed JSON payloads.
     }
