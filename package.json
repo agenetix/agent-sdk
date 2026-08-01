@@ -1,5 +1,5 @@
 {
-  "name": "@mcpstack/agent-sdk",
+  "name": "@agenetix/agent-sdk",
   "version": "1.0.1",
   "publishConfig": {
     "access": "public",

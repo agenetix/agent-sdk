@@ -1,4 +1,4 @@
-# @mcpstack/agent-sdk
+# @agenetix/agent-sdk
 
 Use MCP Stack agents in your app.
 
@@ -9,12 +9,12 @@ This package has one public model for custom product integrations: `App Agent`.
 ## Install
 
 ```bash
-npm install @mcpstack/agent-sdk
+npm install @agenetix/agent-sdk
 ```
 
 ## Package surfaces
 
-### `@mcpstack/agent-sdk`
+### `@agenetix/agent-sdk`
 
 Low-level runtime:
 
@@ -22,7 +22,7 @@ Low-level runtime:
 - core auth helpers
 - core transport and types
 
-### `@mcpstack/agent-sdk/app`
+### `@agenetix/agent-sdk/app`
 
 Framework-agnostic agent experience helpers:
 
@@ -31,7 +31,7 @@ Framework-agnostic agent experience helpers:
 - message / tool derivation helpers
 - resume / pending-turn / formatting helpers
 
-### `@mcpstack/agent-sdk/react`
+### `@agenetix/agent-sdk/react`
 
 React app integration:
 
@@ -39,7 +39,7 @@ React app integration:
 - `AppAgentProvider`
 - `useAppAgentContext`
 
-### `@mcpstack/agent-sdk/react-native`
+### `@agenetix/agent-sdk/react-native`
 
 React Native app integration:
 
@@ -47,7 +47,7 @@ React Native app integration:
 - `AppAgentProvider`
 - `useAppAgentContext`
 
-### `@mcpstack/agent-sdk/react-embed`
+### `@agenetix/agent-sdk/react-embed`
 
 Drop-in web widget:
 
@@ -58,7 +58,7 @@ Drop-in web widget:
 ### 1. Drop-in web embed
 
 ```tsx
-import { McpStackChat } from "@mcpstack/agent-sdk/react-embed";
+import { McpStackChat } from "@agenetix/agent-sdk/react-embed";
 
 export function App() {
   return (
@@ -87,7 +87,7 @@ export function App() {
 ### 2. Custom React app UI
 
 ```tsx
-import { useAppAgent } from "@mcpstack/agent-sdk/react";
+import { useAppAgent } from "@agenetix/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
@@ -114,7 +114,7 @@ export function CustomAssistant() {
 ### 3. Custom React Native UI
 
 ```tsx
-import { useAppAgent } from "@mcpstack/agent-sdk/react-native";
+import { useAppAgent } from "@agenetix/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
@@ -139,7 +139,7 @@ export function AssistantShell() {
 ### 4. Raw runtime
 
 ```ts
-import { McpStackAgent } from "@mcpstack/agent-sdk";
+import { McpStackAgent } from "@agenetix/agent-sdk";
 
 const agent = new McpStackAgent({
   apiKey: "mcpstack_pk_xxxx",
