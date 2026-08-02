@@ -86,10 +86,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/emcy-ai/mcpstack-agent-sdk.git"
+    "url": "git+https://github.com/agenetix/mcpstack-agent-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/emcy-ai/mcpstack-agent-sdk/issues"
+    "url": "https://github.com/agenetix/mcpstack-agent-sdk/issues"
   },
   "author": "MCP Stack <hello@mcpstack.com>",
   "homepage": "https://mcpstack.com",
