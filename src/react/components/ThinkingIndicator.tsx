@@ -4,7 +4,7 @@ import { colors } from './styles';
 export function ThinkingIndicator() {
   return (
     <div
-      className="mcpstack-fadeInUp"
+      className="agenetix-fadeInUp"
       style={{
         maxWidth: '80%',
         padding: '12px 16px',
@@ -25,7 +25,7 @@ export function ThinkingIndicator() {
             height: 7,
             borderRadius: '50%',
             backgroundColor: colors.textSecondary,
-            animation: 'mcpstack-pulse 1.4s infinite',
+            animation: 'agenetix-pulse 1.4s infinite',
             animationDelay: `${i * 0.2}s`,
           }}
         />

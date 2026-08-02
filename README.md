@@ -1,8 +1,8 @@
 # @agenetix/agent-sdk
 
-Use MCP Stack agents in your app.
+Use Agenetix agents in your app.
 
-AgentSDK is MCP Stack's first-party AG-UI client. Your app talks AG-UI to the agent; MCP Stack keeps server tools on MCP through Gateway, AuthGateway, budgets, logs, and permissions.
+AgentSDK is Agenetix's first-party AG-UI client. Your app talks AG-UI to the agent; Agenetix keeps server tools on MCP through Gateway, AuthGateway, budgets, logs, and permissions.
 
 This package has one public model for custom product integrations: `App Agent`.
 
@@ -18,7 +18,7 @@ npm install @agenetix/agent-sdk
 
 Low-level runtime:
 
-- `McpStackAgent`
+- `AgenetixAgent`
 - core auth helpers
 - core transport and types
 
@@ -51,20 +51,20 @@ React Native app integration:
 
 Drop-in web widget:
 
-- `McpStackChat`
+- `AgenetixChat`
 
 ## Start here
 
 ### 1. Drop-in web embed
 
 ```tsx
-import { McpStackChat } from "@agenetix/agent-sdk/react-embed";
+import { AgenetixChat } from "@agenetix/agent-sdk/react-embed";
 
 export function App() {
   return (
     <div style={{ height: 640 }}>
-      <McpStackChat
-        apiKey="mcpstack_pk_xxxx"
+      <AgenetixChat
+        apiKey="agenetix_pk_xxxx"
         agentId="ag_xxxxx"
         appSessionKey={session.id}
         userIdentity={{
@@ -91,7 +91,7 @@ import { useAppAgent } from "@agenetix/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_pk_xxxx",
+    apiKey: "agenetix_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -118,7 +118,7 @@ import { useAppAgent } from "@agenetix/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_pk_xxxx",
+    apiKey: "agenetix_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -139,10 +139,10 @@ export function AssistantShell() {
 ### 4. Raw runtime
 
 ```ts
-import { McpStackAgent } from "@agenetix/agent-sdk";
+import { AgenetixAgent } from "@agenetix/agent-sdk";
 
-const agent = new McpStackAgent({
-  apiKey: "mcpstack_pk_xxxx",
+const agent = new AgenetixAgent({
+  apiKey: "agenetix_pk_xxxx",
   agentId: "ag_xxxxx",
   authSessionKey: session.id,
 });
@@ -159,8 +159,8 @@ the local noise floor, then commits the utterance after a short trailing pause.
 Apps can tune the behavior without implementing their own VAD:
 
 ```ts
-const agent = new McpStackAgent({
-  apiKey: "mcpstack_pk_xxxx",
+const agent = new AgenetixAgent({
+  apiKey: "agenetix_pk_xxxx",
   agentId: "ag_xxxxx",
   audioInput: {
     turnDetection: {
@@ -177,7 +177,7 @@ const agent = new McpStackAgent({
 
 ### `apiKey`
 
-Your MCP Stack public agent key, usually an `mcpstack_pk_*` embed key scoped to the agent and allowed browser origins.
+Your Agenetix public agent key, usually an `agenetix_pk_*` embed key scoped to the agent and allowed browser origins.
 
 ### `agentId`
 
@@ -217,7 +217,7 @@ auth: {
 auth library refreshes tokens, read from that current session source rather than
 capturing a token from the first render.
 
-The SDK forwards that app token with the AG-UI run. When the agent needs a server MCP tool, MCP Stack exchanges the app token at Gateway for an MCP-facing token without OAuth client registration. External MCP clients can still use the same Gateway-backed server through standard OAuth discovery, registration, and authorization.
+The SDK forwards that app token with the AG-UI run. When the agent needs a server MCP tool, Agenetix exchanges the app token at Gateway for an MCP-facing token without OAuth client registration. External MCP clients can still use the same Gateway-backed server through standard OAuth discovery, registration, and authorization.
 
 ### `frontendTools`
 
@@ -236,9 +236,9 @@ AgentSDK uses AG-UI for agent turns:
 ```text
 AgentSDK / custom AG-UI frontend
         -> AG-UI
-MCP Stack Agent
+Agenetix Agent
         -> MCP
-MCP Stack Server
+Agenetix Server
         -> Gateway / AuthGateway
         -> SaaS API
 ```
@@ -255,7 +255,7 @@ That means:
 If an external MCP client needs user-scoped OAuth:
 
 - pass `userIdentity`
-- let MCP Stack manage the popup flow by default
+- let Agenetix manage the popup flow by default
 - override with `onAuthRequired` only when you need custom host auth UX
 
 For embedded apps, prefer `auth.mode = "app-token"` instead of a popup flow.
