@@ -1,15 +1,15 @@
-export { AgenetixAgent } from './core/AgenetixAgent';
+export { McpStackAgent } from './core/EmcyAgent';
 export { clearPersistedMcpAuth, clearPersistedMcpAuthState } from './core/auth-storage';
 export type { ClearPersistedMcpAuthStateOptions, PersistedStateStorage } from './core/auth-storage';
 export type {
   FrontendToolDefinition,
   FrontendToolParameter,
   FrontendToolsMap,
-  AgenetixAppTokenAuthConfig,
-  AgenetixAgentConfig,
-  AgenetixEmbeddedAuthConfig,
-  AgenetixEmbeddedAuthIdentity,
-  AgenetixStorageLike,
+  McpStackAppTokenAuthConfig,
+  McpStackAgentConfig,
+  McpStackEmbeddedAuthConfig,
+  McpStackEmbeddedAuthIdentity,
+  McpStackStorageLike,
   ChatMessage,
   ConversationFeedback,
   ConversationFeedbackSentiment,
@@ -22,8 +22,8 @@ export type {
   McpAuthStatusEvent,
   OAuthTokenResponse,
   WidgetConfig,
-  AgenetixAgentEvent,
-  AgenetixAgentEventMap,
+  McpStackAgentEvent,
+  McpStackAgentEventMap,
   SseContentDelta,
   SseToolCall,
   SseMessageEnd,
