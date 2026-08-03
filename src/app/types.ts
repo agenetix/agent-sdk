@@ -6,16 +6,16 @@ import type {
   FrontendToolsMap as RuntimeFrontendToolsMap,
   ConversationFeedback,
   ConversationFeedbackSentiment,
-  McpStackAppTokenAuthConfig,
-  McpStackEmbeddedAuthIdentity,
-  McpStackStorageLike,
+  AgenetixAppTokenAuthConfig,
+  AgenetixEmbeddedAuthIdentity,
+  AgenetixStorageLike,
   McpServerAuthConfig,
   OAuthTokenResponse,
   SseError,
 } from '../core/types';
 
 export type FrontendToolsMap = RuntimeFrontendToolsMap;
-export type AppAgentUserIdentity = McpStackEmbeddedAuthIdentity;
+export type AppAgentUserIdentity = AgenetixEmbeddedAuthIdentity;
 
 export interface KeyValueStore {
   getItem(key: string): Promise<string | null> | string | null;
@@ -121,7 +121,7 @@ export interface AppAgentConfig {
   getAuthToken?: () => Promise<string | undefined>;
   appSessionKey?: string | null;
   userIdentity?: AppAgentUserIdentity;
-  auth?: McpStackAppTokenAuthConfig;
+  auth?: AgenetixAppTokenAuthConfig;
   useCookies?: boolean;
   externalUserId?: string;
   appContext?: Record<string, unknown>;
@@ -133,7 +133,7 @@ export interface AppAgentConfig {
     historyPageSize?: number;
   };
   feedbackSource?: string;
-  storage?: McpStackStorageLike | null;
+  storage?: AgenetixStorageLike | null;
 }
 
 export interface AppAgentLifecycleState {

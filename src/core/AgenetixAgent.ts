@@ -15,12 +15,12 @@ import type {
   ConversationMessagesPage,
   FrontendToolsMap,
   FrontendToolParameter,
-  McpStackAgentEvent,
-  McpStackAgentEventMap,
-  McpStackAgentConfig,
+  AgenetixAgentEvent,
+  AgenetixAgentEventMap,
+  AgenetixAgentConfig,
   SseContentDelta,
   McpServerAuthConfig,
-  McpStackAppTokenAuthConfig,
+  AgenetixAppTokenAuthConfig,
   OAuthTokenResponse,
   ProtectedResourceMetadata,
   SseError,
@@ -44,7 +44,7 @@ import {
 
 type EventHandler<T> = (data: T) => void;
 type BuiltInPopupAuthHandler = {
-  __mcpStackBuiltinPopupAuth?: boolean;
+  __agenetixBuiltinPopupAuth?: boolean;
 };
 
 type RealtimeTranscriptionSessionResponse = {
@@ -114,8 +114,8 @@ const AG_UI_EVENT = {
 
 const DEFAULT_MCP_PROTOCOL_VERSION = '2025-11-25';
 const DEFAULT_LOCAL_PUBLIC_APP_PORT = '3100';
-const DEFAULT_OAUTH_CALLBACK_URL = 'https://mcpstack.com/oauth/callback';
-const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://mcpstack.com/.well-known/oauth-client-metadata.json';
+const DEFAULT_OAUTH_CALLBACK_URL = 'https://agenetix.com/oauth/callback';
+const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://agenetix.com/.well-known/oauth-client-metadata.json';
 const DEFAULT_AUDIO_TURN_DETECTION: ResolvedAudioTurnDetectionConfig = {
   enabled: true,
   autoSubmit: true,
@@ -203,8 +203,8 @@ function normalizeOAuthTokenResponse(
 
 function createAppTokenAuthHandler(
   agentId: string,
-  auth: McpStackAppTokenAuthConfig,
-): McpStackAgentConfig['onAuthRequired'] {
+  auth: AgenetixAppTokenAuthConfig,
+): AgenetixAgentConfig['onAuthRequired'] {
   return async (mcpServerUrl: string, authConfig: McpServerAuthConfig): Promise<OAuthTokenResponse | undefined> => {
     const appToken = await auth.getToken();
     const trimmedToken = appToken?.trim();
@@ -217,7 +217,7 @@ function createAppTokenAuthHandler(
       Authorization: `Bearer ${trimmedToken}`,
     };
     if (auth.appId?.trim()) {
-      headers['x-mcpstack-embedded-app-id'] = auth.appId.trim();
+      headers['x-agenetix-embedded-app-id'] = auth.appId.trim();
     }
 
     const body: Record<string, unknown> = {
@@ -341,21 +341,21 @@ function parametersToJsonSchema(params: Record<string, FrontendToolParameter>): 
 }
 
 /**
- * Core orchestration class for the MCP Stack Agent SDK.
+ * Core orchestration class for the Agenetix Agent SDK.
  * Framework-agnostic — works in any JavaScript environment.
  *
  * Handles:
- * - Communication with the MCP Stack AG-UI run endpoint (SSE streaming)
+ * - Communication with the Agenetix AG-UI run endpoint (SSE streaming)
  * - AG-UI frontend tool execution via configured frontendTools
  * - MCP server auth/session helpers for legacy and explicit auth flows
  * - Conversation state management
  * - Event emission for UI updates
  */
-export class McpStackAgent {
+export class AgenetixAgent {
   private config: Required<
-    Pick<McpStackAgentConfig, 'apiKey' | 'agentId' | 'agentServiceUrl'>
+    Pick<AgenetixAgentConfig, 'apiKey' | 'agentId' | 'agentServiceUrl'>
   > &
-    McpStackAgentConfig;
+    AgenetixAgentConfig;
   private agentConfig: AgentConfigResponse | null = null;
   private budgetSnapshot: AgentBudgetSnapshot | null = null;
   private conversationId: string | null = null;
@@ -398,13 +398,13 @@ export class McpStackAgent {
   private audioFinalTranscript = '';
   private audioTurnState: AudioTurnState | null = null;
 
-  constructor(config: McpStackAgentConfig) {
+  constructor(config: AgenetixAgentConfig) {
     const appTokenAuthHandler = config.auth?.mode === 'app-token'
       ? createAppTokenAuthHandler(config.agentId, config.auth)
       : undefined;
     this.config = {
       ...config,
-      agentServiceUrl: config.agentServiceUrl ?? 'https://api.mcpstack.com',
+      agentServiceUrl: config.agentServiceUrl ?? 'https://api.agenetix.com',
       oauthCallbackUrl: config.oauthCallbackUrl ?? getDefaultOAuthCallbackUrl(config.agentServiceUrl),
       oauthClientMetadataUrl:
         config.oauthClientMetadataUrl ?? getDefaultOAuthClientMetadataUrl(config.agentServiceUrl),
@@ -767,8 +767,8 @@ export class McpStackAgent {
     return Object.entries(this.config.frontendTools).map(([name, def]) => {
       const metadata: Record<string, unknown> = {};
       if (def.selection) {
-        metadata.mcpstack = { selection: def.selection };
-        metadata['x-mcpstack-selection'] = def.selection;
+        metadata.agenetix = { selection: def.selection };
+        metadata['x-agenetix-selection'] = def.selection;
       }
 
       return {
@@ -792,15 +792,15 @@ export class McpStackAgent {
 
   private buildAgUiForwardedProps(): AgUiRunInput['forwardedProps'] {
     const externalUser = this.buildExternalUserContext();
-    const mcpstack: AgUiRunInput['forwardedProps']['mcpstack'] = {
+    const agenetix: AgUiRunInput['forwardedProps']['agenetix'] = {
       conversationId: this.conversationId ?? undefined,
       externalUserId: this.resolveExternalUserId(),
       context: this.config.context,
     };
     if (externalUser) {
-      mcpstack.externalUser = externalUser;
+      agenetix.externalUser = externalUser;
     }
-    return { mcpstack };
+    return { agenetix };
   }
 
   private buildAgUiUserRunInput(message: string): AgUiRunInput {
@@ -985,14 +985,14 @@ export class McpStackAgent {
     return this.config.oauthClientMetadataUrl ?? DEFAULT_OAUTH_CLIENT_METADATA_URL;
   }
 
-  private getDefaultAuthRequiredHandler(): McpStackAgentConfig['onAuthRequired'] {
+  private getDefaultAuthRequiredHandler(): AgenetixAgentConfig['onAuthRequired'] {
     return this.config.auth?.mode === 'app-token'
       ? createAppTokenAuthHandler(this.config.agentId, this.config.auth)
       : undefined;
   }
 
   setOnAuthRequired(
-    onAuthRequired: McpStackAgentConfig['onAuthRequired'],
+    onAuthRequired: AgenetixAgentConfig['onAuthRequired'],
   ): void {
     this.config = {
       ...this.config,
@@ -1739,8 +1739,8 @@ export class McpStackAgent {
     const registration = await resolveOAuthRegistration(authConfig, {
       callbackUrl: this.getOAuthCallbackUrl(),
       oauthClientMetadataUrl: this.config.oauthClientMetadataUrl,
-      clientName: 'MCP Stack MCP Client',
-      clientUri: 'https://mcpstack.com',
+      clientName: 'Agenetix MCP Client',
+      clientUri: 'https://agenetix.com',
       storage: this.getPersistentStorage(),
     });
 
@@ -1748,7 +1748,7 @@ export class McpStackAgent {
   }
 
   /** Subscribe to events */
-  on<K extends McpStackAgentEvent>(event: K, handler: EventHandler<McpStackAgentEventMap[K]>): void {
+  on<K extends AgenetixAgentEvent>(event: K, handler: EventHandler<AgenetixAgentEventMap[K]>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -1756,7 +1756,7 @@ export class McpStackAgent {
   }
 
   /** Unsubscribe from events */
-  off<K extends McpStackAgentEvent>(event: K, handler: EventHandler<McpStackAgentEventMap[K]>): void {
+  off<K extends AgenetixAgentEvent>(event: K, handler: EventHandler<AgenetixAgentEventMap[K]>): void {
     this.listeners.get(event)?.delete(handler as EventHandler<unknown>);
   }
 
@@ -2134,7 +2134,7 @@ export class McpStackAgent {
     }
   }
 
-  private emit<K extends McpStackAgentEvent>(event: K, data: McpStackAgentEventMap[K]): void {
+  private emit<K extends AgenetixAgentEvent>(event: K, data: AgenetixAgentEventMap[K]): void {
     this.listeners.get(event)?.forEach((handler) => handler(data));
   }
 
@@ -2409,7 +2409,7 @@ export class McpStackAgent {
     if (this.config.onAuthRequired) {
       if (authConfig) {
         const isBuiltInPopupAuth =
-          (this.config.onAuthRequired as BuiltInPopupAuthHandler).__mcpStackBuiltinPopupAuth === true;
+          (this.config.onAuthRequired as BuiltInPopupAuthHandler).__agenetixBuiltinPopupAuth === true;
         const isAppTokenAuth = this.config.auth?.mode === 'app-token';
         const authConfigForHandler =
           authConfig.authType === 'oauth2' && !isBuiltInPopupAuth && !isAppTokenAuth
@@ -2522,10 +2522,10 @@ export class McpStackAgent {
     if (this.config.auth?.mode === 'app-token') {
       const appToken = await this.config.auth.getToken();
       if (appToken?.trim()) {
-        headers['X-MCPStack-App-Token'] = appToken.trim();
+        headers['X-Agenetix-App-Token'] = appToken.trim();
       }
       if (this.config.auth.appId?.trim()) {
-        headers['X-MCPStack-Embedded-App-Id'] = this.config.auth.appId.trim();
+        headers['X-Agenetix-Embedded-App-Id'] = this.config.auth.appId.trim();
       }
     }
 
@@ -2618,15 +2618,15 @@ export class McpStackAgent {
             break;
           }
 
-          const mcpstack = this.getRecordField(data, 'mcpstack');
-          const sourceValue = mcpstack ? this.getStringField(mcpstack, 'source') : undefined;
+          const agenetix = this.getRecordField(data, 'agenetix');
+          const sourceValue = agenetix ? this.getStringField(agenetix, 'source') : undefined;
           const source = sourceValue === 'mcp' ? 'mcp' : sourceValue === 'client' ? 'client' : undefined;
 
           toolCalls.set(toolCallId, {
             toolCallId,
             toolName,
-            toolLabel: mcpstack ? this.getStringField(mcpstack, 'label') : undefined,
-            mcpServerName: mcpstack ? this.getStringField(mcpstack, 'mcpServerName') : undefined,
+            toolLabel: agenetix ? this.getStringField(agenetix, 'label') : undefined,
+            mcpServerName: agenetix ? this.getStringField(agenetix, 'mcpServerName') : undefined,
             source,
             argumentsJson: '',
             startedAt: Date.now(),
@@ -2706,7 +2706,7 @@ export class McpStackAgent {
 
         case AG_UI_EVENT.CUSTOM: {
           const name = this.getStringField(data, 'name');
-          if (name === 'mcpstack.budget_snapshot') {
+          if (name === 'agenetix.budget_snapshot') {
             const value = data.value;
             if (value && typeof value === 'object') {
               this.budgetSnapshot = value as AgentBudgetSnapshot;
@@ -3128,7 +3128,7 @@ export class McpStackAgent {
       params: {
         protocolVersion: DEFAULT_MCP_PROTOCOL_VERSION,
         capabilities: {},
-        clientInfo: { name: 'mcpstack-agent-sdk', version: '0.1.0' },
+        clientInfo: { name: 'agenetix-agent-sdk', version: '0.1.0' },
       },
     });
 
