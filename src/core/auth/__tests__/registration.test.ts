@@ -16,19 +16,19 @@ describe('resolveOAuthRegistration', () => {
     const authConfig: McpServerAuthConfig = {
       authType: 'oauth2',
       authorizationServerUrl: 'https://auth.todo.example.com',
-      clientId: 'seeded-agenetix-client',
+      clientId: 'seeded-mcpstack-client',
       clientIdMetadataDocumentSupported: true,
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
     };
 
     const result = await resolveOAuthRegistration(authConfig, {
-      callbackUrl: 'https://agenetix.com/oauth/callback',
-      oauthClientMetadataUrl: 'https://agenetix.com/.well-known/oauth-client-metadata.json',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      oauthClientMetadataUrl: 'https://mcpstack.com/.well-known/oauth-client-metadata.json',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
     expect(result.mode).toBe('preregistered');
-    expect(result.clientId).toBe('seeded-agenetix-client');
+    expect(result.clientId).toBe('seeded-mcpstack-client');
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
@@ -40,12 +40,12 @@ describe('resolveOAuthRegistration', () => {
     };
 
     const result = await resolveOAuthRegistration(authConfig, {
-      callbackUrl: 'https://agenetix.com/oauth/callback',
-      oauthClientMetadataUrl: 'https://agenetix.com/.well-known/oauth-client-metadata.json',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      oauthClientMetadataUrl: 'https://mcpstack.com/.well-known/oauth-client-metadata.json',
     });
 
     expect(result.mode).toBe('cimd');
-    expect(result.clientId).toBe('https://agenetix.com/.well-known/oauth-client-metadata.json');
+    expect(result.clientId).toBe('https://mcpstack.com/.well-known/oauth-client-metadata.json');
   });
 
   it('registers a public PKCE client via DCR and reuses the cached registration', async () => {
@@ -70,12 +70,12 @@ describe('resolveOAuthRegistration', () => {
     };
 
     const first = await resolveOAuthRegistration(authConfig, {
-      callbackUrl: 'https://agenetix.com/oauth/callback',
-      clientName: 'Agenetix MCP Client',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      clientName: 'MCP Stack MCP Client',
       fetchImpl: fetchImpl as typeof fetch,
     });
     const second = await resolveOAuthRegistration(authConfig, {
-      callbackUrl: 'https://agenetix.com/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
@@ -125,7 +125,7 @@ describe('resolveOAuthRegistration', () => {
     };
 
     const result = await resolveOAuthRegistration(authConfig, {
-      callbackUrl: 'https://agenetix.com/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
     });
 
     expect(result.mode).toBe('manual');
@@ -138,7 +138,7 @@ describe('buildTokenCacheKey', () => {
     const baseAuthConfig: McpServerAuthConfig = {
       authType: 'oauth2',
       authorizationServerUrl: 'https://auth.todo.example.com',
-      callbackUrl: 'https://agenetix.com/oauth/callback',
+      callbackUrl: 'https://mcpstack.com/oauth/callback',
       resource: 'https://todo.example.com/mcp',
       clientMode: 'cimd',
     };
