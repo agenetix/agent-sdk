@@ -30,7 +30,7 @@ export function useAppAgent(
       authConfig: McpServerAuthConfig,
     ) => popupRequestAuthRef.current?.(serverUrl, authConfig) ?? Promise.resolve(undefined);
 
-    (handler as { __mcpStackBuiltinPopupAuth?: boolean }).__mcpStackBuiltinPopupAuth = true;
+    (handler as { __agenetixBuiltinPopupAuth?: boolean }).__agenetixBuiltinPopupAuth = true;
     return handler;
   }, []);
 

@@ -1,5 +1,5 @@
 import type {
-  McpStackAgentConfig,
+  AgenetixAgentConfig,
   McpServerAuthConfig,
   OAuthTokenResponse,
 } from '../core/types';
@@ -50,7 +50,7 @@ export function createPlatformAuthHandler(options: {
   platform: AppAgentPlatform;
   userIdentity?: AppAgentUserIdentity;
   oauthCallbackUrl: string;
-}): McpStackAgentConfig['onAuthRequired'] {
+}): AgenetixAgentConfig['onAuthRequired'] {
   return async (_mcpServerUrl: string, authConfig: McpServerAuthConfig): Promise<OAuthTokenResponse | undefined> => {
     if (!options.platform.auth) {
       return undefined;
@@ -91,18 +91,18 @@ export function createPlatformAuthHandler(options: {
       const displayName = normalizeOptionalValue(options.userIdentity.displayName);
 
       if (subject) {
-        authorizeUrl.searchParams.set('mcpstack_host_subject', subject);
+        authorizeUrl.searchParams.set('agenetix_host_subject', subject);
       }
       if (email) {
-        authorizeUrl.searchParams.set('mcpstack_host_email', email);
+        authorizeUrl.searchParams.set('agenetix_host_email', email);
       }
       if (organizationId) {
-        authorizeUrl.searchParams.set('mcpstack_host_organization_id', organizationId);
+        authorizeUrl.searchParams.set('agenetix_host_organization_id', organizationId);
       }
       if (displayName) {
-        authorizeUrl.searchParams.set('mcpstack_host_display_name', displayName);
+        authorizeUrl.searchParams.set('agenetix_host_display_name', displayName);
       }
-      authorizeUrl.searchParams.set('mcpstack_mismatch_policy', 'block_with_switch');
+      authorizeUrl.searchParams.set('agenetix_mismatch_policy', 'block_with_switch');
     }
 
     const result = await options.platform.auth.openOAuthSession({

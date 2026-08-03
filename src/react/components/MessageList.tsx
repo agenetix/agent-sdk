@@ -151,7 +151,7 @@ export function MessageList({
 
         {/* Streaming content shown as a partial assistant bubble */}
         {streamingContent && (
-          <div className="mcpstack-fadeInUp" style={styles.streamingBubble}>
+          <div className="agenetix-fadeInUp" style={styles.streamingBubble}>
             <MarkdownRenderer content={streamingContent} />
             <StreamingCursor />
           </div>

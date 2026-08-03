@@ -33,7 +33,7 @@ export interface FrontendToolSelection {
 // Configuration
 // ================================================================
 
-export interface McpStackEmbeddedAuthIdentity {
+export interface AgenetixEmbeddedAuthIdentity {
   subject?: string;
   email?: string;
   organizationId?: string;
@@ -41,18 +41,18 @@ export interface McpStackEmbeddedAuthIdentity {
   avatarUrl?: string;
 }
 
-export interface McpStackEmbeddedAuthConfig {
-  hostIdentity?: McpStackEmbeddedAuthIdentity;
+export interface AgenetixEmbeddedAuthConfig {
+  hostIdentity?: AgenetixEmbeddedAuthIdentity;
   mismatchPolicy: 'block_with_switch';
 }
 
-export interface McpStackAppTokenAuthConfig {
+export interface AgenetixAppTokenAuthConfig {
   mode: 'app-token';
   appId?: string;
   getToken: () => Promise<string | undefined> | string | undefined;
 }
 
-export interface McpStackExternalUserContext {
+export interface AgenetixExternalUserContext {
   id?: string;
   email?: string;
   displayName?: string;
@@ -60,7 +60,7 @@ export interface McpStackExternalUserContext {
   organizationId?: string;
 }
 
-export interface McpStackStorageLike {
+export interface AgenetixStorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
@@ -110,7 +110,7 @@ export interface AudioTurnDetectionConfig {
   noiseMultiplier?: number;
 }
 
-export interface McpStackAudioInputConfig {
+export interface AgenetixAudioInputConfig {
   /**
    * SDK-owned turn detection configuration. Consumer apps can tune it, but
    * they do not need to implement their own microphone VAD.
@@ -118,19 +118,19 @@ export interface McpStackAudioInputConfig {
   turnDetection?: AudioTurnDetectionConfig;
 }
 
-export interface McpStackAgentConfig {
-  /** API key for authenticating with the MCP Stack API */
+export interface AgenetixAgentConfig {
+  /** API key for authenticating with the Agenetix API */
   apiKey: string;
 
-  /** Agent ID from the MCP Stack dashboard */
+  /** Agent ID from the Agenetix dashboard */
   agentId: string;
 
-  /** MCP Stack API URL. Defaults to https://api.mcpstack.com */
+  /** Agenetix API URL. Defaults to https://api.agenetix.com */
   agentServiceUrl?: string;
 
   /**
    * Callback URL used by the standalone popup OAuth flow.
-   * Defaults to the hosted MCP Stack callback page so downstream auth servers
+   * Defaults to the hosted Agenetix callback page so downstream auth servers
    * only need to allow a single redirect URI.
    */
   oauthCallbackUrl?: string;
@@ -142,7 +142,7 @@ export interface McpStackAgentConfig {
   oauthClientMetadataUrl?: string;
 
   /**
-   * Callback to get the auth token for MCP Stack API requests.
+   * Callback to get the auth token for Agenetix API requests.
    * If provided, called before each agent run request.
    * Use this when your session token may expire and needs refresh (e.g., dashboard playground).
    * If not provided, uses the static `apiKey` value.
@@ -158,10 +158,10 @@ export interface McpStackAgentConfig {
 
   /**
    * Embedded popup auth settings.
-   * Use this to tell MCP Stack which host-app user is currently signed in so
+   * Use this to tell Agenetix which host-app user is currently signed in so
    * the built-in popup flow can prefer the same downstream account.
    */
-  embeddedAuth?: McpStackEmbeddedAuthConfig;
+  embeddedAuth?: AgenetixEmbeddedAuthConfig;
 
   /**
    * App-owned MCP auth for embedded products.
@@ -169,7 +169,7 @@ export interface McpStackAgentConfig {
    * short-lived app access token. The SDK exchanges that token at Gateway for
    * an MCP-facing token without opening a second sign-in window.
    */
-  auth?: McpStackAppTokenAuthConfig;
+  auth?: AgenetixAppTokenAuthConfig;
 
   /**
    * If true, MCP server calls include cookies (for cookie-based auth).
@@ -194,7 +194,7 @@ export interface McpStackAgentConfig {
   context?: Record<string, unknown>;
 
   /** Optional: microphone input behavior. */
-  audioInput?: McpStackAudioInputConfig;
+  audioInput?: AgenetixAudioInputConfig;
 
   /**
    * Optional: resume an existing server-side conversation on init.
@@ -218,7 +218,7 @@ export interface McpStackAgentConfig {
    * Optional persistent storage override used for MCP auth/session artifacts.
    * If omitted, the runtime falls back to `localStorage` when available.
    */
-  storage?: McpStackStorageLike | null;
+  storage?: AgenetixStorageLike | null;
 }
 
 // ================================================================
@@ -580,7 +580,7 @@ export interface AudioActivityEvent {
 }
 
 // ================================================================
-// Events emitted by McpStackAgent
+// Events emitted by AgenetixAgent
 // ================================================================
 
 export interface McpAuthStatusEvent {
@@ -589,7 +589,7 @@ export interface McpAuthStatusEvent {
   authStatus: 'connected' | 'needs_auth';
 }
 
-export type McpStackAgentEventMap = {
+export type AgenetixAgentEventMap = {
   message: ChatMessage;
   content_delta: SseContentDelta;
   tool_call: SseToolCall;
@@ -607,4 +607,4 @@ export type McpStackAgentEventMap = {
   audio_transcript_final: AudioTranscriptFinalEvent;
 };
 
-export type McpStackAgentEvent = keyof McpStackAgentEventMap;
+export type AgenetixAgentEvent = keyof AgenetixAgentEventMap;

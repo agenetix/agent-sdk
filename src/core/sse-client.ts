@@ -1,5 +1,5 @@
 /**
- * Parses SSE streams from MCP Stack agent endpoints.
+ * Parses SSE streams from Agenetix agent endpoints.
  * Yields parsed events as they arrive.
  */
 export interface ParsedSseEvent {
