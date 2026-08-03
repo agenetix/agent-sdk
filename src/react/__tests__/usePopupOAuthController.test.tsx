@@ -114,10 +114,10 @@ describe('usePopupOAuthController', () => {
     expect(openSpy).toHaveBeenCalledTimes(1);
     expect(openSpy).toHaveBeenCalledWith(
       'about:blank',
-      'agenetix-auth-popup',
+      'mcpstack-auth-popup',
       expect.stringContaining('popup=yes'),
     );
-    expect((popupWindow as Window).name).toContain('agenetix-auth:');
+    expect((popupWindow as Window).name).toContain('mcpstack-auth:');
     expect(screen.getByText('preparing')).toBeDefined();
     expect(popupWindow.location.replace).not.toHaveBeenCalled();
 

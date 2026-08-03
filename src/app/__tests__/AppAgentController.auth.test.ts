@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppAgentController } from '../controller';
 import type { AgentConfigResponse, McpServerAuthConfig } from '../../core/types';
 
-const SERVICE_URL = 'https://api.agenetix.test';
+const SERVICE_URL = 'https://api.mcpstack.test';
 const MCP_SERVER_URL = 'https://todo.example.com/mcp';
 
 const authConfig: McpServerAuthConfig = {

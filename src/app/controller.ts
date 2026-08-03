@@ -1,4 +1,4 @@
-import { AgenetixAgent } from '../core/AgenetixAgent';
+import { McpStackAgent } from '../core/EmcyAgent';
 import type {
   AgentBudgetSnapshot,
   AgentConfigResponse,
@@ -88,7 +88,7 @@ type AppAgentInternalState = {
 
 export type AppAgentSnapshot = AppAgentSnapshotBase & {
   runtime: AppAgentSnapshotBase['runtime'] & {
-    agent: AgenetixAgent;
+    agent: McpStackAgent;
   };
   conversation: AppAgentSnapshotBase['conversation'] & {
     visibleMessages: ReturnType<typeof deriveVisibleMessages>;
@@ -167,7 +167,7 @@ function isToolRoutingResetError(error: SseError): boolean {
     && /tool not found/i.test(error.message);
 }
 
-function mapConnections(agent: AgenetixAgent): AppAgentConnection[] {
+function mapConnections(agent: McpStackAgent): AppAgentConnection[] {
   return agent.getMcpServers().map((server) => ({
     url: server.url,
     name: server.name,
@@ -216,7 +216,7 @@ function mergeConnections(
 
 export class AppAgentController {
   private readonly listeners = new Set<Listener>();
-  private readonly agent: AgenetixAgent;
+  private readonly agent: McpStackAgent;
   private readonly platform: NonNullable<AppAgentConfig['platform']>;
   private readonly recoveredConversationIds = new Set<string>();
   private readonly approvalResolvers = new Map<string, ApprovalResolver>();
@@ -246,7 +246,7 @@ export class AppAgentController {
           : undefined
       );
 
-    this.agent = new AgenetixAgent({
+    this.agent = new McpStackAgent({
       apiKey: config.apiKey,
       agentId: config.agentId,
       agentServiceUrl: config.serviceUrl,
@@ -313,7 +313,7 @@ export class AppAgentController {
     this.snapshot = this.buildSnapshot();
   }
 
-  getAgent(): AgenetixAgent {
+  getAgent(): McpStackAgent {
     return this.agent;
   }
 
@@ -1170,7 +1170,7 @@ export class AppAgentController {
       return null;
     }
 
-    const namespace = this.config.conversation?.namespace ?? 'agenetix.app-agent.resume';
+    const namespace = this.config.conversation?.namespace ?? 'mcpstack.app-agent.resume';
     const sessionKey = this.config.appSessionKey?.trim() || 'anonymous';
     return `${namespace}:${this.config.agentId}:${sessionKey}`;
   }

@@ -1,11 +1,11 @@
-import type { AgenetixAgentConfig, AgenetixStorageLike } from './types';
+import type { McpStackAgentConfig, McpStackStorageLike } from './types';
 
-export type PersistedStateStorage = AgenetixStorageLike & Pick<Storage, 'key' | 'length'>;
+export type PersistedStateStorage = McpStackStorageLike & Pick<Storage, 'key' | 'length'>;
 
-const LEGACY_OAUTH_TOKEN_STORAGE_PREFIX = 'agenetix_oauth_';
-const REGISTRATION_STORAGE_PREFIX = 'agenetix_oauth_registration_';
-const SCOPED_OAUTH_TOKEN_STORAGE_PREFIX = 'agenetix_oauth_session_';
-const OAUTH_CALLBACK_STORAGE_PREFIX = 'agenetix-oauth-callback:';
+const LEGACY_OAUTH_TOKEN_STORAGE_PREFIX = 'mcpstack_oauth_';
+const REGISTRATION_STORAGE_PREFIX = 'mcpstack_oauth_registration_';
+const SCOPED_OAUTH_TOKEN_STORAGE_PREFIX = 'mcpstack_oauth_session_';
+const OAUTH_CALLBACK_STORAGE_PREFIX = 'mcpstack-oauth-callback:';
 
 export interface ClearPersistedMcpAuthStateOptions {
   /** Session scope to clear. Ignored when `clearAll` is true. */
@@ -37,7 +37,7 @@ export function normalizeAuthSessionKey(value?: string | null): string | null {
 }
 
 export function resolveExplicitAuthSessionKey(
-  config: Pick<AgenetixAgentConfig, 'authSessionKey'>,
+  config: Pick<McpStackAgentConfig, 'authSessionKey'>,
 ): string | null {
   return normalizeAuthSessionKey(config.authSessionKey);
 }
