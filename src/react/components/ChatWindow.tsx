@@ -141,7 +141,7 @@ export function ChatWindow({
 
       {/* Powered by */}
       <div style={styles.poweredBy}>
-        Powered by <a href="https://agenetix.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Agenetix</a>
+        Powered by <a href="https://mcpstack.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>MCP Stack</a>
       </div>
     </div>
   );

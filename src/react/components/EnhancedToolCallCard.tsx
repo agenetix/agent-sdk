@@ -86,7 +86,7 @@ export function EnhancedToolCallCard({
 
   return (
     <div
-      className="agenetix-fadeInUp"
+      className="mcpstack-fadeInUp"
       style={{
         maxWidth: '92%',
         alignSelf: 'flex-start',
@@ -158,7 +158,7 @@ export function EnhancedToolCallCard({
           style={{
             marginTop: 4,
             marginBottom: 8,
-            animation: 'agenetix-slideDown 0.2s ease-out',
+            animation: 'mcpstack-slideDown 0.2s ease-out',
           }}
         >
           <pre

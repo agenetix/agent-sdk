@@ -58,7 +58,7 @@ export function CheckCircleIcon({ size = 16, color, className }: IconProps) {
   return (
     <svg {...svgBase(size, className)} style={color ? { color } : undefined}>
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" strokeDasharray="24" strokeDashoffset="0" style={{ animation: 'agenetix-checkmark 0.4s ease-out both' }} />
+      <polyline points="22 4 12 14.01 9 11.01" strokeDasharray="24" strokeDashoffset="0" style={{ animation: 'mcpstack-checkmark 0.4s ease-out both' }} />
     </svg>
   );
 }
@@ -80,7 +80,7 @@ export function SpinnerIcon({ size = 16, color, className }: IconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={`agenetix-spin ${className ?? ''}`}
+      className={`mcpstack-spin ${className ?? ''}`}
       style={color ? { color } : undefined}
     >
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.2" />

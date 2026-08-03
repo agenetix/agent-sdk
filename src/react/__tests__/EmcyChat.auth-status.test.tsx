@@ -1,11 +1,11 @@
 import React from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AgenetixChat } from '../AgenetixChat';
+import { McpStackChat } from '../EmcyChat';
 import type { AgentConfigResponse } from '../../core/types';
 
-const SERVICE_URL = 'https://api.agenetix.test';
-const MCP_SERVER_URL = 'https://api.agenetix.test/api/v1/gateway/gw_todo/mcp';
+const SERVICE_URL = 'https://api.mcpstack.test';
+const MCP_SERVER_URL = 'https://api.mcpstack.test/api/v1/gateway/gw_todo/mcp';
 
 function createAgentConfig(authStatus: 'connected' | 'needs_auth' = 'needs_auth'): AgentConfigResponse {
   return {
@@ -30,7 +30,7 @@ function createAgentConfig(authStatus: 'connected' | 'needs_auth' = 'needs_auth'
   };
 }
 
-describe('AgenetixChat auth status rendering', () => {
+describe('McpStackChat auth status rendering', () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -50,13 +50,13 @@ describe('AgenetixChat auth status rendering', () => {
 
     render(
       <React.StrictMode>
-        <AgenetixChat
+        <McpStackChat
           apiKey=""
           agentId="agent_test"
           serviceUrl={SERVICE_URL}
           mode="inline"
           userIdentity={{
-            subject: 'agenetix:user_1',
+            subject: 'mcpstack:user_1',
             email: 'user1@example.com',
           }}
         />
@@ -83,13 +83,13 @@ describe('AgenetixChat auth status rendering', () => {
 
     render(
       <React.StrictMode>
-        <AgenetixChat
+        <McpStackChat
           apiKey=""
           agentId="agent_test"
           serviceUrl={SERVICE_URL}
           mode="inline"
           userIdentity={{
-            subject: 'agenetix:user_1',
+            subject: 'mcpstack:user_1',
             email: 'user1@example.com',
           }}
         />

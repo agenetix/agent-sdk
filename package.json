@@ -1,11 +1,11 @@
 {
   "name": "@agenetix/agent-sdk",
-  "version": "2.0.0",
+  "version": "1.0.2",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "First-party AG-UI client for Agenetix Agents. Add an LLM-powered agent to your web app while server tools stay on MCP.",
+  "description": "First-party AG-UI client for MCP Stack Agents. Add an LLM-powered agent to your web app while server tools stay on MCP.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -74,7 +74,7 @@
     "vitest": "^4.1.0"
   },
   "keywords": [
-    "agenetix",
+    "mcpstack",
     "mcp",
     "ai",
     "chat",
@@ -91,8 +91,8 @@
   "bugs": {
     "url": "https://github.com/agenetix/agent-sdk/issues"
   },
-  "author": "Agenetix <hello@agenetix.com>",
-  "homepage": "https://agenetix.com",
+  "author": "MCP Stack <hello@mcpstack.com>",
+  "homepage": "https://mcpstack.com",
   "dependencies": {
     "@ag-ui/core": "^0.0.55"
   }

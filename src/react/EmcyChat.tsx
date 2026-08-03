@@ -5,7 +5,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { OAuthPopup } from './components/OAuthPopup';
 import { WidgetButton } from './components/WidgetButton';
 
-export interface AgenetixChatProps extends AppAgentConfig {
+export interface McpStackChatProps extends AppAgentConfig {
   /**
    * Display mode:
    * - 'floating': chat popup with a fixed button (default)
@@ -24,7 +24,7 @@ export interface AgenetixChatProps extends AppAgentConfig {
   onToolActivity?: () => void;
 }
 
-export function AgenetixChat({
+export function McpStackChat({
   mode = 'floating',
   title,
   welcomeMessage,
@@ -32,10 +32,10 @@ export function AgenetixChat({
   defaultOpen = false,
   onToolActivity,
   ...agentConfig
-}: AgenetixChatProps) {
+}: McpStackChatProps) {
   return (
     <AppAgentProvider {...agentConfig}>
-      <AgenetixChatInner
+      <McpStackChatInner
         mode={mode}
         title={title}
         welcomeMessage={welcomeMessage}
@@ -48,7 +48,7 @@ export function AgenetixChat({
   );
 }
 
-interface AgenetixChatInnerProps {
+interface McpStackChatInnerProps {
   mode: 'floating' | 'inline';
   title?: string;
   welcomeMessage?: string;
@@ -60,7 +60,7 @@ interface AgenetixChatInnerProps {
 
 type AnimState = 'closed' | 'opening' | 'open' | 'closing';
 
-function AgenetixChatInner({
+function McpStackChatInner({
   mode,
   title,
   welcomeMessage,
@@ -68,7 +68,7 @@ function AgenetixChatInner({
   defaultOpen,
   onToolActivity,
   hasUserIdentity,
-}: AgenetixChatInnerProps) {
+}: McpStackChatInnerProps) {
   const [animState, setAnimState] = useState<AnimState>(defaultOpen ? 'open' : 'closed');
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wasLoadingRef = useRef(false);
@@ -206,9 +206,9 @@ function AgenetixChatInner({
         <div
           className={
             animState === 'opening'
-              ? 'agenetix-fadeInScale'
+              ? 'mcpstack-fadeInScale'
               : animState === 'closing'
-                ? 'agenetix-fadeOut'
+                ? 'mcpstack-fadeOut'
                 : undefined
           }
           style={{ position: 'contents' as never }}

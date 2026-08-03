@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AgenetixAgent } from '../AgenetixAgent';
+import { McpStackAgent } from '../EmcyAgent';
 import type { AudioTranscriptFinalEvent } from '../types';
 
 type AudioFrameActivity = {
@@ -17,7 +17,7 @@ type TestAgentInternals = {
   setAudioState(patch: Record<string, unknown>): void;
 };
 
-describe('AgenetixAgent audio input', () => {
+describe('McpStackAgent audio input', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -54,8 +54,8 @@ describe('AgenetixAgent audio input', () => {
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('WebSocket', undefined);
 
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
     });
 
@@ -72,8 +72,8 @@ describe('AgenetixAgent audio input', () => {
   });
 
   it('submits the final transcript through the existing composer path', async () => {
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
     });
     const sendSpy = vi.spyOn(agent, 'sendMessage').mockResolvedValue();
@@ -134,24 +134,24 @@ describe('AgenetixAgent audio input', () => {
       },
     });
     vi.stubGlobal('WebSocket', TestWebSocket);
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
     });
 
     await (agent as unknown as {
       openAudioSocket(url: string): Promise<WebSocket>;
-    }).openAudioSocket('ws://pr-44.preview.agenetix.com/api/v1/agents/agent_audio/audio?token=test');
+    }).openAudioSocket('ws://pr-44.preview.mcpstack.com/api/v1/agents/agent_audio/audio?token=test');
 
     expect(openedUrls).toEqual([
-      'wss://pr-44.preview.agenetix.com/api/v1/agents/agent_audio/audio?token=test',
+      'wss://pr-44.preview.mcpstack.com/api/v1/agents/agent_audio/audio?token=test',
     ]);
   });
 
   it('auto-commits microphone input after real speech followed by trailing silence', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
@@ -181,8 +181,8 @@ describe('AgenetixAgent audio input', () => {
 
   it('does not auto-commit a short microphone bump as speech', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
@@ -211,8 +211,8 @@ describe('AgenetixAgent audio input', () => {
 
   it('closes an idle microphone session when no speech is detected', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new AgenetixAgent({
-      apiKey: 'agenetix-test-key',
+    const agent = new McpStackAgent({
+      apiKey: 'mcpstack-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
