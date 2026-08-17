@@ -271,6 +271,21 @@ When `serviceUrl` points to localhost, popup helper URLs default to:
 
 Use `react-embed` for the fastest hosted widget, and use `react` or `react-native` when the assistant is part of your product.
 
+## Publishing
+
+`publish-npm.yml` is the only npm publish entry point. Merging to `main` does not publish `latest`.
+
+- **Pull request against `main`** — publishes a preview dist-tag, for example `@agenetix/agent-sdk@pr-12`. The workflow comments with the exact package ref.
+- **`v*` tag** (for example `v2.0.3`) — publishes `latest`. Bump `package.json` first; npm will not overwrite an already-published version.
+
+To try a preview in a platform PR, add the ref to `infra/preview-packages.json`:
+
+```json
+{
+  "@agenetix/agent-sdk": "@agenetix/agent-sdk@pr-12"
+}
+```
+
 ## License
 
 MIT
