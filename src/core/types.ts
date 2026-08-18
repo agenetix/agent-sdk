@@ -119,18 +119,18 @@ export interface McpStackAudioInputConfig {
 }
 
 export interface McpStackAgentConfig {
-  /** API key for authenticating with the MCP Stack API */
+  /** API key for authenticating with the Agenetix API */
   apiKey: string;
 
-  /** Agent ID from the MCP Stack dashboard */
+  /** Agent ID from the Agenetix dashboard */
   agentId: string;
 
-  /** MCP Stack API URL. Defaults to https://api.mcpstack.com */
+  /** Agenetix API URL. Defaults to https://api.agenetix.com */
   agentServiceUrl?: string;
 
   /**
    * Callback URL used by the standalone popup OAuth flow.
-   * Defaults to the hosted MCP Stack callback page so downstream auth servers
+   * Defaults to the hosted Agenetix callback page so downstream auth servers
    * only need to allow a single redirect URI.
    */
   oauthCallbackUrl?: string;
@@ -142,7 +142,7 @@ export interface McpStackAgentConfig {
   oauthClientMetadataUrl?: string;
 
   /**
-   * Callback to get the auth token for MCP Stack API requests.
+   * Callback to get the auth token for Agenetix API requests.
    * If provided, called before each agent run request.
    * Use this when your session token may expire and needs refresh (e.g., dashboard playground).
    * If not provided, uses the static `apiKey` value.
@@ -158,7 +158,7 @@ export interface McpStackAgentConfig {
 
   /**
    * Embedded popup auth settings.
-   * Use this to tell MCP Stack which host-app user is currently signed in so
+   * Use this to tell Agenetix which host-app user is currently signed in so
    * the built-in popup flow can prefer the same downstream account.
    */
   embeddedAuth?: McpStackEmbeddedAuthConfig;

@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { McpStackAgent } from '../EmcyAgent';
 
 const AGENT_ID = 'agent_test';
-const CONFIG_URL = `https://api.mcpstack.com/api/v1/agents/${AGENT_ID}/config`;
-const AG_UI_URL = `https://api.mcpstack.com/api/v1/agents/${AGENT_ID}/ag-ui`;
+const CONFIG_URL = `https://api.agenetix.com/api/v1/agents/${AGENT_ID}/config`;
+const AG_UI_URL = `https://api.agenetix.com/api/v1/agents/${AGENT_ID}/ag-ui`;
 
 function agentConfigResponse(): Response {
   return Response.json({

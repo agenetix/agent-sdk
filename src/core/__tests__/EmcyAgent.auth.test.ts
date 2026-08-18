@@ -60,7 +60,7 @@ describe('McpStackAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({ authType: 'oauth2' }));
       }
 
@@ -110,7 +110,7 @@ describe('McpStackAgent auth behavior', () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfigWithAuthStatus(
           {
             authType: 'oauth2',
@@ -143,7 +143,7 @@ describe('McpStackAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({ authType: 'oauth2' }));
       }
 
@@ -194,7 +194,7 @@ describe('McpStackAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({
           authType: 'oauth2',
           authorizationServerUrl: 'https://auth.todo.example.com',
@@ -244,7 +244,7 @@ describe('McpStackAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(createAgentConfig({
           authType: 'oauth2',
           authorizationServerUrl: 'https://auth.todo.example.com',
@@ -291,7 +291,7 @@ describe('McpStackAgent auth behavior', () => {
     expect(authConfig?.manualOverrides).toEqual(['resource']);
   });
 
-  it('defaults local standalone OAuth helpers to the MCP Stack web origin when agentServiceUrl is localhost', () => {
+  it('defaults local standalone OAuth helpers to the Agenetix web origin when agentServiceUrl is localhost', () => {
     const agent = new McpStackAgent({
       apiKey: 'mcpstack-test-key',
       agentId: 'agent_test',
@@ -318,7 +318,7 @@ describe('McpStackAgent auth behavior', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString();
 
-      if (url === 'https://api.mcpstack.com/api/v1/agents/agent_test/config') {
+      if (url === 'https://api.agenetix.com/api/v1/agents/agent_test/config') {
         return Response.json(
           { error: 'Invalid or expired API key' },
           { status: 401 },
@@ -346,7 +346,7 @@ describe('McpStackAgent auth behavior', () => {
         const body = (init?.body as URLSearchParams).toString();
         expect(body).toContain('grant_type=refresh_token');
         expect(body).toContain('refresh_token=refresh-token-1');
-        expect(body).toContain('client_id=https%3A%2F%2Fmcpstack.com%2F.well-known%2Foauth-client-metadata.json');
+        expect(body).toContain('client_id=https%3A%2F%2Fagenetix.com%2F.well-known%2Foauth-client-metadata.json');
         expect(body).toContain('resource=https%3A%2F%2Ftodo.example.com');
 
         return Response.json({
@@ -366,9 +366,9 @@ describe('McpStackAgent auth behavior', () => {
       authorizationServerUrl: 'https://auth.todo.example.com',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      clientId: 'https://mcpstack.com/.well-known/oauth-client-metadata.json',
+      clientId: 'https://agenetix.com/.well-known/oauth-client-metadata.json',
       clientMode: 'cimd',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
@@ -401,14 +401,14 @@ describe('McpStackAgent auth behavior', () => {
       authorizationServerMetadataUrl:
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
     const registrationCacheKey = buildRegistrationCacheKey(
       baseAuthConfig,
-      'https://mcpstack.com/oauth/callback',
+      'https://agenetix.com/oauth/callback',
       'dcr',
     );
 
@@ -420,7 +420,7 @@ describe('McpStackAgent auth behavior', () => {
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
       clientId: 'dcr-client-123',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -430,7 +430,7 @@ describe('McpStackAgent auth behavior', () => {
       cacheKey: registrationCacheKey,
       mode: 'dcr',
       clientId: 'dcr-client-123',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       authorizationServerUrl: 'https://auth.todo.example.com',
       authorizationServerMetadataUrl:
@@ -474,7 +474,7 @@ describe('McpStackAgent auth behavior', () => {
       authType: 'oauth2',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
@@ -526,7 +526,7 @@ describe('McpStackAgent auth behavior', () => {
       authType: 'oauth2',
       tokenEndpoint: 'https://auth.todo.example.com/oauth/token',
       tokenUrl: 'https://auth.todo.example.com/oauth/token',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
@@ -567,14 +567,14 @@ describe('McpStackAgent auth behavior', () => {
       authorizationServerMetadataUrl:
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       discovered: true,
     };
 
     const registrationCacheKey = buildRegistrationCacheKey(
       authConfig,
-      'https://mcpstack.com/oauth/callback',
+      'https://agenetix.com/oauth/callback',
       'dcr',
     );
 
@@ -586,7 +586,7 @@ describe('McpStackAgent auth behavior', () => {
         'https://auth.todo.example.com/.well-known/oauth-authorization-server',
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
       clientId: 'persisted-dcr-client',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
       resource: MCP_SERVER_URL,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -730,7 +730,7 @@ describe('McpStackAgent auth behavior', () => {
     expect(onAuthRequired).toHaveBeenCalledWith(MCP_SERVER_URL, expect.objectContaining({
       authType: 'oauth2',
       clientMode: 'manual',
-      callbackUrl: 'https://mcpstack.com/oauth/callback',
+      callbackUrl: 'https://agenetix.com/oauth/callback',
     }));
     expect(events).toContain('connected');
     expect(agent.getMcpServers()).toEqual([{

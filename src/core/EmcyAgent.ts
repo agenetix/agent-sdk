@@ -114,8 +114,8 @@ const AG_UI_EVENT = {
 
 const DEFAULT_MCP_PROTOCOL_VERSION = '2025-11-25';
 const DEFAULT_LOCAL_PUBLIC_APP_PORT = '3100';
-const DEFAULT_OAUTH_CALLBACK_URL = 'https://mcpstack.com/oauth/callback';
-const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://mcpstack.com/.well-known/oauth-client-metadata.json';
+const DEFAULT_OAUTH_CALLBACK_URL = 'https://agenetix.com/oauth/callback';
+const DEFAULT_OAUTH_CLIENT_METADATA_URL = 'https://agenetix.com/.well-known/oauth-client-metadata.json';
 const DEFAULT_AUDIO_TURN_DETECTION: ResolvedAudioTurnDetectionConfig = {
   enabled: true,
   autoSubmit: true,
@@ -404,7 +404,7 @@ export class McpStackAgent {
       : undefined;
     this.config = {
       ...config,
-      agentServiceUrl: config.agentServiceUrl ?? 'https://api.mcpstack.com',
+      agentServiceUrl: config.agentServiceUrl ?? 'https://api.agenetix.com',
       oauthCallbackUrl: config.oauthCallbackUrl ?? getDefaultOAuthCallbackUrl(config.agentServiceUrl),
       oauthClientMetadataUrl:
         config.oauthClientMetadataUrl ?? getDefaultOAuthClientMetadataUrl(config.agentServiceUrl),
@@ -1739,8 +1739,8 @@ export class McpStackAgent {
     const registration = await resolveOAuthRegistration(authConfig, {
       callbackUrl: this.getOAuthCallbackUrl(),
       oauthClientMetadataUrl: this.config.oauthClientMetadataUrl,
-      clientName: 'MCP Stack MCP Client',
-      clientUri: 'https://mcpstack.com',
+      clientName: 'Agenetix MCP Client',
+      clientUri: 'https://agenetix.com',
       storage: this.getPersistentStorage(),
     });
 
