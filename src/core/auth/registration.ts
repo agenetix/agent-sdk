@@ -233,7 +233,7 @@ export async function registerPublicClient(
   }
 
   const requestBody: OAuthDynamicClientRegistrationRequest = {
-    client_name: options.clientName ?? 'MCP Stack MCP Client',
+    client_name: options.clientName ?? 'Agenetix MCP Client',
     application_type: inferApplicationType(callbackUrl),
     redirect_uris: [callbackUrl],
     grant_types: ['authorization_code', 'refresh_token'],

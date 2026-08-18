@@ -141,10 +141,10 @@ describe('McpStackAgent audio input', () => {
 
     await (agent as unknown as {
       openAudioSocket(url: string): Promise<WebSocket>;
-    }).openAudioSocket('ws://pr-44.preview.mcpstack.com/api/v1/agents/agent_audio/audio?token=test');
+    }).openAudioSocket('ws://pr-44.preview.agenetix.com/api/v1/agents/agent_audio/audio?token=test');
 
     expect(openedUrls).toEqual([
-      'wss://pr-44.preview.mcpstack.com/api/v1/agents/agent_audio/audio?token=test',
+      'wss://pr-44.preview.agenetix.com/api/v1/agents/agent_audio/audio?token=test',
     ]);
   });
 

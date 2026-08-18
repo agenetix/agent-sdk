@@ -487,7 +487,7 @@ export function usePopupOAuthController(
         const registration = await resolveOAuthRegistration(effectiveAuthConfig, {
           callbackUrl: getCallbackUrl(effectiveAuthConfig),
           oauthClientMetadataUrl: optionsRef.current.oauthClientMetadataUrl,
-          clientName: 'MCP Stack MCP Client',
+          clientName: 'Agenetix MCP Client',
           clientUri: window.location.origin,
         });
         effectiveAuthConfig = applyResolvedRegistration(effectiveAuthConfig, registration);
