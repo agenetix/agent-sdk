@@ -12,14 +12,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   switch (message.role) {
     case 'user':
       return (
-        <div className="mcpstack-fadeInUp" style={styles.userBubble}>
+        <div className="emcy-fadeInUp" style={styles.userBubble}>
           {message.content}
         </div>
       );
 
     case 'assistant':
       return (
-        <div className="mcpstack-fadeInUp" style={styles.assistantBubble}>
+        <div className="emcy-fadeInUp" style={styles.assistantBubble}>
           <MarkdownRenderer content={message.content} />
         </div>
       );
@@ -43,7 +43,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     case 'error':
       return (
         <div
-          className="mcpstack-fadeInUp"
+          className="emcy-fadeInUp"
           style={{
             ...styles.errorCard,
             marginTop: 8,

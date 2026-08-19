@@ -3,7 +3,7 @@ import React from 'react';
 export function StreamingCursor() {
   return (
     <span
-      className="mcpstack-blink"
+      className="emcy-blink"
       style={{
         display: 'inline-block',
         width: 2,

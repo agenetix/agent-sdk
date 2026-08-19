@@ -33,7 +33,7 @@ export interface FrontendToolSelection {
 // Configuration
 // ================================================================
 
-export interface McpStackEmbeddedAuthIdentity {
+export interface EmcyEmbeddedAuthIdentity {
   subject?: string;
   email?: string;
   organizationId?: string;
@@ -41,18 +41,18 @@ export interface McpStackEmbeddedAuthIdentity {
   avatarUrl?: string;
 }
 
-export interface McpStackEmbeddedAuthConfig {
-  hostIdentity?: McpStackEmbeddedAuthIdentity;
+export interface EmcyEmbeddedAuthConfig {
+  hostIdentity?: EmcyEmbeddedAuthIdentity;
   mismatchPolicy: 'block_with_switch';
 }
 
-export interface McpStackAppTokenAuthConfig {
+export interface EmcyAppTokenAuthConfig {
   mode: 'app-token';
   appId?: string;
   getToken: () => Promise<string | undefined> | string | undefined;
 }
 
-export interface McpStackExternalUserContext {
+export interface EmcyExternalUserContext {
   id?: string;
   email?: string;
   displayName?: string;
@@ -60,7 +60,7 @@ export interface McpStackExternalUserContext {
   organizationId?: string;
 }
 
-export interface McpStackStorageLike {
+export interface EmcyStorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
@@ -110,7 +110,7 @@ export interface AudioTurnDetectionConfig {
   noiseMultiplier?: number;
 }
 
-export interface McpStackAudioInputConfig {
+export interface EmcyAudioInputConfig {
   /**
    * SDK-owned turn detection configuration. Consumer apps can tune it, but
    * they do not need to implement their own microphone VAD.
@@ -118,7 +118,7 @@ export interface McpStackAudioInputConfig {
   turnDetection?: AudioTurnDetectionConfig;
 }
 
-export interface McpStackAgentConfig {
+export interface EmcyAgentConfig {
   /** API key for authenticating with the Agenetix API */
   apiKey: string;
 
@@ -161,7 +161,7 @@ export interface McpStackAgentConfig {
    * Use this to tell Agenetix which host-app user is currently signed in so
    * the built-in popup flow can prefer the same downstream account.
    */
-  embeddedAuth?: McpStackEmbeddedAuthConfig;
+  embeddedAuth?: EmcyEmbeddedAuthConfig;
 
   /**
    * App-owned MCP auth for embedded products.
@@ -169,7 +169,7 @@ export interface McpStackAgentConfig {
    * short-lived app access token. The SDK exchanges that token at Gateway for
    * an MCP-facing token without opening a second sign-in window.
    */
-  auth?: McpStackAppTokenAuthConfig;
+  auth?: EmcyAppTokenAuthConfig;
 
   /**
    * If true, MCP server calls include cookies (for cookie-based auth).
@@ -194,7 +194,7 @@ export interface McpStackAgentConfig {
   context?: Record<string, unknown>;
 
   /** Optional: microphone input behavior. */
-  audioInput?: McpStackAudioInputConfig;
+  audioInput?: EmcyAudioInputConfig;
 
   /**
    * Optional: resume an existing server-side conversation on init.
@@ -218,7 +218,7 @@ export interface McpStackAgentConfig {
    * Optional persistent storage override used for MCP auth/session artifacts.
    * If omitted, the runtime falls back to `localStorage` when available.
    */
-  storage?: McpStackStorageLike | null;
+  storage?: EmcyStorageLike | null;
 }
 
 // ================================================================
@@ -580,7 +580,7 @@ export interface AudioActivityEvent {
 }
 
 // ================================================================
-// Events emitted by McpStackAgent
+// Events emitted by EmcyAgent
 // ================================================================
 
 export interface McpAuthStatusEvent {
@@ -589,7 +589,7 @@ export interface McpAuthStatusEvent {
   authStatus: 'connected' | 'needs_auth';
 }
 
-export type McpStackAgentEventMap = {
+export type EmcyAgentEventMap = {
   message: ChatMessage;
   content_delta: SseContentDelta;
   tool_call: SseToolCall;
@@ -607,4 +607,4 @@ export type McpStackAgentEventMap = {
   audio_transcript_final: AudioTranscriptFinalEvent;
 };
 
-export type McpStackAgentEvent = keyof McpStackAgentEventMap;
+export type EmcyAgentEvent = keyof EmcyAgentEventMap;

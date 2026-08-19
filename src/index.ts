@@ -1,15 +1,15 @@
-export { McpStackAgent } from './core/EmcyAgent';
+export { EmcyAgent } from './core/EmcyAgent';
 export { clearPersistedMcpAuth, clearPersistedMcpAuthState } from './core/auth-storage';
 export type { ClearPersistedMcpAuthStateOptions, PersistedStateStorage } from './core/auth-storage';
 export type {
   FrontendToolDefinition,
   FrontendToolParameter,
   FrontendToolsMap,
-  McpStackAppTokenAuthConfig,
-  McpStackAgentConfig,
-  McpStackEmbeddedAuthConfig,
-  McpStackEmbeddedAuthIdentity,
-  McpStackStorageLike,
+  EmcyAppTokenAuthConfig,
+  EmcyAgentConfig,
+  EmcyEmbeddedAuthConfig,
+  EmcyEmbeddedAuthIdentity,
+  EmcyStorageLike,
   ChatMessage,
   ConversationFeedback,
   ConversationFeedbackSentiment,
@@ -22,8 +22,8 @@ export type {
   McpAuthStatusEvent,
   OAuthTokenResponse,
   WidgetConfig,
-  McpStackAgentEvent,
-  McpStackAgentEventMap,
+  EmcyAgentEvent,
+  EmcyAgentEventMap,
   SseContentDelta,
   SseToolCall,
   SseMessageEnd,

@@ -1,5 +1,5 @@
 import type {
-  McpStackStorageLike,
+  EmcyStorageLike,
   McpClientRegistrationPreference,
   McpResolvedClientMode,
   McpServerAuthConfig,
@@ -9,9 +9,9 @@ import type {
   StoredOAuthRegistration,
 } from '../types';
 
-const REGISTRATION_STORAGE_PREFIX = 'mcpstack_oauth_registration_';
+const REGISTRATION_STORAGE_PREFIX = 'emcy_oauth_registration_';
 
-function getStorage(storage?: McpStackStorageLike | null): McpStackStorageLike | null {
+function getStorage(storage?: EmcyStorageLike | null): EmcyStorageLike | null {
   if (storage) {
     return storage;
   }
@@ -85,7 +85,7 @@ export function buildTokenCacheKey(
 
 export function loadStoredRegistration(
   cacheKey: string,
-  storage?: McpStackStorageLike | null,
+  storage?: EmcyStorageLike | null,
 ): StoredOAuthRegistration | null {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return null;
@@ -101,7 +101,7 @@ export function loadStoredRegistration(
 
 export function saveStoredRegistration(
   registration: StoredOAuthRegistration,
-  storage?: McpStackStorageLike | null,
+  storage?: EmcyStorageLike | null,
 ): void {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return;
@@ -118,7 +118,7 @@ export function saveStoredRegistration(
 
 export function clearStoredRegistration(
   cacheKey: string,
-  storage?: McpStackStorageLike | null,
+  storage?: EmcyStorageLike | null,
 ): void {
   const targetStorage = getStorage(storage);
   if (!targetStorage) return;
@@ -156,7 +156,7 @@ export interface ResolveOAuthRegistrationOptions {
   clientName?: string;
   clientUri?: string;
   fetchImpl?: typeof fetch;
-  storage?: McpStackStorageLike | null;
+  storage?: EmcyStorageLike | null;
 }
 
 function createResolvedRegistration(

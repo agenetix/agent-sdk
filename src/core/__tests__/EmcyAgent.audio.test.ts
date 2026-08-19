@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { McpStackAgent } from '../EmcyAgent';
+import { EmcyAgent } from '../EmcyAgent';
 import type { AudioTranscriptFinalEvent } from '../types';
 
 type AudioFrameActivity = {
@@ -17,7 +17,7 @@ type TestAgentInternals = {
   setAudioState(patch: Record<string, unknown>): void;
 };
 
-describe('McpStackAgent audio input', () => {
+describe('EmcyAgent audio input', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -54,8 +54,8 @@ describe('McpStackAgent audio input', () => {
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('WebSocket', undefined);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
     });
 
@@ -72,8 +72,8 @@ describe('McpStackAgent audio input', () => {
   });
 
   it('submits the final transcript through the existing composer path', async () => {
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
     });
     const sendSpy = vi.spyOn(agent, 'sendMessage').mockResolvedValue();
@@ -134,8 +134,8 @@ describe('McpStackAgent audio input', () => {
       },
     });
     vi.stubGlobal('WebSocket', TestWebSocket);
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
     });
 
@@ -150,8 +150,8 @@ describe('McpStackAgent audio input', () => {
 
   it('auto-commits microphone input after real speech followed by trailing silence', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
@@ -181,8 +181,8 @@ describe('McpStackAgent audio input', () => {
 
   it('does not auto-commit a short microphone bump as speech', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
@@ -211,8 +211,8 @@ describe('McpStackAgent audio input', () => {
 
   it('closes an idle microphone session when no speech is detected', () => {
     vi.stubGlobal('WebSocket', { OPEN: 1, CONNECTING: 0 });
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: 'agent_audio',
       audioInput: {
         turnDetection: {
