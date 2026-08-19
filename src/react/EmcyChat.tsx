@@ -5,7 +5,7 @@ import { ChatWindow } from './components/ChatWindow';
 import { OAuthPopup } from './components/OAuthPopup';
 import { WidgetButton } from './components/WidgetButton';
 
-export interface McpStackChatProps extends AppAgentConfig {
+export interface EmcyChatProps extends AppAgentConfig {
   /**
    * Display mode:
    * - 'floating': chat popup with a fixed button (default)
@@ -24,7 +24,7 @@ export interface McpStackChatProps extends AppAgentConfig {
   onToolActivity?: () => void;
 }
 
-export function McpStackChat({
+export function EmcyChat({
   mode = 'floating',
   title,
   welcomeMessage,
@@ -32,10 +32,10 @@ export function McpStackChat({
   defaultOpen = false,
   onToolActivity,
   ...agentConfig
-}: McpStackChatProps) {
+}: EmcyChatProps) {
   return (
     <AppAgentProvider {...agentConfig}>
-      <McpStackChatInner
+      <EmcyChatInner
         mode={mode}
         title={title}
         welcomeMessage={welcomeMessage}
@@ -48,7 +48,7 @@ export function McpStackChat({
   );
 }
 
-interface McpStackChatInnerProps {
+interface EmcyChatInnerProps {
   mode: 'floating' | 'inline';
   title?: string;
   welcomeMessage?: string;
@@ -60,7 +60,7 @@ interface McpStackChatInnerProps {
 
 type AnimState = 'closed' | 'opening' | 'open' | 'closing';
 
-function McpStackChatInner({
+function EmcyChatInner({
   mode,
   title,
   welcomeMessage,
@@ -68,7 +68,7 @@ function McpStackChatInner({
   defaultOpen,
   onToolActivity,
   hasUserIdentity,
-}: McpStackChatInnerProps) {
+}: EmcyChatInnerProps) {
   const [animState, setAnimState] = useState<AnimState>(defaultOpen ? 'open' : 'closed');
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wasLoadingRef = useRef(false);
@@ -206,9 +206,9 @@ function McpStackChatInner({
         <div
           className={
             animState === 'opening'
-              ? 'mcpstack-fadeInScale'
+              ? 'emcy-fadeInScale'
               : animState === 'closing'
-                ? 'mcpstack-fadeOut'
+                ? 'emcy-fadeOut'
                 : undefined
           }
           style={{ position: 'contents' as never }}

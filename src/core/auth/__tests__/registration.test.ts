@@ -16,7 +16,7 @@ describe('resolveOAuthRegistration', () => {
     const authConfig: McpServerAuthConfig = {
       authType: 'oauth2',
       authorizationServerUrl: 'https://auth.todo.example.com',
-      clientId: 'seeded-mcpstack-client',
+      clientId: 'seeded-agenetix-client',
       clientIdMetadataDocumentSupported: true,
       registrationEndpoint: 'https://auth.todo.example.com/connect/register',
     };
@@ -28,7 +28,7 @@ describe('resolveOAuthRegistration', () => {
     });
 
     expect(result.mode).toBe('preregistered');
-    expect(result.clientId).toBe('seeded-mcpstack-client');
+    expect(result.clientId).toBe('seeded-agenetix-client');
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 

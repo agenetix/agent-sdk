@@ -13,8 +13,8 @@ import {
 import { normalizeAuthSessionKey } from '../core/auth-storage';
 import type { OAuthPopupPhase, OAuthPopupViewState } from './components/OAuthPopup';
 
-const OAUTH_CALLBACK_CHANNEL_NAME = 'mcpstack-oauth';
-const OAUTH_CALLBACK_STORAGE_PREFIX = 'mcpstack-oauth-callback:';
+const OAUTH_CALLBACK_CHANNEL_NAME = 'emcy-oauth';
+const OAUTH_CALLBACK_STORAGE_PREFIX = 'emcy-oauth-callback:';
 
 interface UsePopupOAuthControllerOptions {
   resolveServerName: (serverUrl: string) => string;
@@ -378,7 +378,7 @@ export function usePopupOAuthController(
     clearPollTimer(request);
     clearStoredCallbackPayload(responseState);
 
-    if (data.type === 'mcpstack-oauth-callback' && typeof data.token === 'string') {
+    if (data.type === 'emcy-oauth-callback' && typeof data.token === 'string') {
       resolveAndClearActiveRequest({
         accessToken: data.token,
         resolvedAuthConfig: request.resolvedAuthConfig,
@@ -386,7 +386,7 @@ export function usePopupOAuthController(
       return;
     }
 
-    if (data.type === 'mcpstack-oauth-callback' && typeof data.accessToken === 'string') {
+    if (data.type === 'emcy-oauth-callback' && typeof data.accessToken === 'string') {
       resolveAndClearActiveRequest({
         accessToken: data.accessToken,
         refreshToken: typeof data.refreshToken === 'string' ? data.refreshToken : undefined,
@@ -397,12 +397,12 @@ export function usePopupOAuthController(
       return;
     }
 
-    if (data.type === 'mcpstack-oauth-code' && typeof data.code === 'string') {
+    if (data.type === 'emcy-oauth-code' && typeof data.code === 'string') {
       void exchangeCodeForToken(data.code);
       return;
     }
 
-    if (data.type === 'mcpstack-oauth-error' && typeof data.error === 'string') {
+    if (data.type === 'emcy-oauth-error' && typeof data.error === 'string') {
       const description =
         typeof data.errorDescription === 'string'
           ? data.errorDescription
@@ -436,7 +436,7 @@ export function usePopupOAuthController(
     const top = window.screenY + (window.outerHeight - height) / 2;
     const popupWindow = window.open(
       'about:blank',
-      'mcpstack-auth-popup',
+      'emcy-auth-popup',
       `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
     );
 
@@ -464,7 +464,7 @@ export function usePopupOAuthController(
     }));
 
     try {
-      request.popupWindow.name = `mcpstack-auth:${popupContext}`;
+      request.popupWindow.name = `emcy-auth:${popupContext}`;
     } catch {
       closePopupWindow(request);
       transitionActiveRequest(
@@ -542,19 +542,19 @@ export function usePopupOAuthController(
         const displayName = normalizeOptionalValue(request.userIdentity.displayName);
 
         if (subject) {
-          params.set('mcpstack_host_subject', subject);
+          params.set('emcy_host_subject', subject);
         }
         if (email) {
-          params.set('mcpstack_host_email', email);
+          params.set('emcy_host_email', email);
         }
         if (organizationId) {
-          params.set('mcpstack_host_organization_id', organizationId);
+          params.set('emcy_host_organization_id', organizationId);
         }
         if (displayName) {
-          params.set('mcpstack_host_display_name', displayName);
+          params.set('emcy_host_display_name', displayName);
         }
         params.set(
-          'mcpstack_mismatch_policy',
+          'emcy_mismatch_policy',
           'block_with_switch',
         );
       }

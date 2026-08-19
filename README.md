@@ -18,7 +18,7 @@ npm install @agenetix/agent-sdk
 
 Low-level runtime:
 
-- `McpStackAgent`
+- `EmcyAgent`
 - core auth helpers
 - core transport and types
 
@@ -51,20 +51,20 @@ React Native app integration:
 
 Drop-in web widget:
 
-- `McpStackChat`
+- `EmcyChat`
 
 ## Start here
 
 ### 1. Drop-in web embed
 
 ```tsx
-import { McpStackChat } from "@agenetix/agent-sdk/react-embed";
+import { EmcyChat } from "@agenetix/agent-sdk/react-embed";
 
 export function App() {
   return (
     <div style={{ height: 640 }}>
-      <McpStackChat
-        apiKey="mcpstack_pk_xxxx"
+      <EmcyChat
+        apiKey="agenetix_pk_xxxx"
         agentId="ag_xxxxx"
         appSessionKey={session.id}
         userIdentity={{
@@ -91,7 +91,7 @@ import { useAppAgent } from "@agenetix/agent-sdk/react";
 
 export function CustomAssistant() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_pk_xxxx",
+    apiKey: "agenetix_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -118,7 +118,7 @@ import { useAppAgent } from "@agenetix/agent-sdk/react-native";
 
 export function AssistantShell() {
   const agent = useAppAgent({
-    apiKey: "mcpstack_pk_xxxx",
+    apiKey: "agenetix_pk_xxxx",
     agentId: "ag_xxxxx",
     appSessionKey: session.id,
     userIdentity: {
@@ -139,10 +139,10 @@ export function AssistantShell() {
 ### 4. Raw runtime
 
 ```ts
-import { McpStackAgent } from "@agenetix/agent-sdk";
+import { EmcyAgent } from "@agenetix/agent-sdk";
 
-const agent = new McpStackAgent({
-  apiKey: "mcpstack_pk_xxxx",
+const agent = new EmcyAgent({
+  apiKey: "agenetix_pk_xxxx",
   agentId: "ag_xxxxx",
   authSessionKey: session.id,
 });
@@ -159,8 +159,8 @@ the local noise floor, then commits the utterance after a short trailing pause.
 Apps can tune the behavior without implementing their own VAD:
 
 ```ts
-const agent = new McpStackAgent({
-  apiKey: "mcpstack_pk_xxxx",
+const agent = new EmcyAgent({
+  apiKey: "agenetix_pk_xxxx",
   agentId: "ag_xxxxx",
   audioInput: {
     turnDetection: {
@@ -177,7 +177,7 @@ const agent = new McpStackAgent({
 
 ### `apiKey`
 
-Your Agenetix public agent key, usually an `mcpstack_pk_*` embed key scoped to the agent and allowed browser origins.
+Your Agenetix public agent key, usually an `agenetix_pk_*` embed key scoped to the agent and allowed browser origins.
 
 ### `agentId`
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { McpStackAgent } from '../EmcyAgent';
+import { EmcyAgent } from '../EmcyAgent';
 
 const AGENT_ID = 'agent_test';
 const CONFIG_URL = `https://api.agenetix.com/api/v1/agents/${AGENT_ID}/config`;
@@ -45,7 +45,7 @@ function frontendToolRun(toolName: string, args: Record<string, unknown> = {}): 
       type: 'TOOL_CALL_START',
       toolCallId: 'tool_1',
       toolCallName: toolName,
-      mcpstack: { source: 'client', label: toolName },
+      emcy: { source: 'client', label: toolName },
     },
     { type: 'TOOL_CALL_ARGS', toolCallId: 'tool_1', delta: JSON.stringify(args) },
     { type: 'TOOL_CALL_END', toolCallId: 'tool_1' },
@@ -67,7 +67,7 @@ function parseBody(init?: RequestInit): Record<string, unknown> {
   return JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
 }
 
-describe('McpStackAgent AG-UI chat context', () => {
+describe('EmcyAgent AG-UI chat context', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -87,7 +87,7 @@ describe('McpStackAgent AG-UI chat context', () => {
       if (url === AG_UI_URL) {
         const body = parseBody(init);
         expect(body.forwardedProps).toEqual({
-          mcpstack: {
+          emcy: {
             externalUserId: 'host-user-123',
             externalUser: {
               id: 'host-user-123',
@@ -107,8 +107,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       embeddedAuth: {
         mismatchPolicy: 'block_with_switch',
@@ -141,7 +141,7 @@ describe('McpStackAgent AG-UI chat context', () => {
       if (url === AG_UI_URL) {
         const body = parseBody(init);
         expect(body.forwardedProps).toMatchObject({
-          mcpstack: {
+          emcy: {
             externalUserId: 'customer-user-789',
             externalUser: {
               id: 'customer-user-789',
@@ -158,8 +158,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       externalUserId: 'customer-user-789',
       embeddedAuth: {
@@ -194,7 +194,7 @@ describe('McpStackAgent AG-UI chat context', () => {
         agUiCalls += 1;
         const body = parseBody(init);
         expect(body.forwardedProps).toMatchObject({
-          mcpstack: {
+          emcy: {
             context: {
               hostRefreshInstruction: 'refresh after mutation',
             },
@@ -220,8 +220,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       context: {
         hostRefreshInstruction: 'refresh after mutation',
@@ -257,7 +257,7 @@ describe('McpStackAgent AG-UI chat context', () => {
       if (url === AG_UI_URL) {
         const body = parseBody(init);
         expect(body.forwardedProps).toMatchObject({
-          mcpstack: {
+          emcy: {
             context: {
               hostRefreshInstruction: 'refresh from updated context',
             },
@@ -272,8 +272,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       context: {
         hostRefreshInstruction: 'refresh from original context',
@@ -331,8 +331,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       frontendTools: {
         getActiveChecklistContext: {
@@ -400,14 +400,14 @@ describe('McpStackAgent AG-UI chat context', () => {
               required: ['ids'],
             },
             metadata: {
-              mcpstack: {
+              emcy: {
                 selection: {
                   categories: ['ui_feedback'],
                   includeWhen: ['highlight'],
                   risk: 'low',
                 },
               },
-              'x-mcpstack-selection': {
+              'x-emcy-selection': {
                 categories: ['ui_feedback'],
                 includeWhen: ['highlight'],
                 risk: 'low',
@@ -424,8 +424,8 @@ describe('McpStackAgent AG-UI chat context', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const agent = new McpStackAgent({
-      apiKey: 'mcpstack-test-key',
+    const agent = new EmcyAgent({
+      apiKey: 'agenetix-test-key',
       agentId: AGENT_ID,
       frontendTools: {
         highlightItems: {
